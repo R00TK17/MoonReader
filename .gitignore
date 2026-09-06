@@ -7,10 +7,7 @@ target
 
 # ============================================================
 # 暂不发布（后续阶段再上线）
-# 当前发布 TXT / CSV 读取能力，其余格式的源码与测试数据先忽略
+# 当前发布 TXT / CSV / JSON / JSONL，TAR 暂忽略
 # ============================================================
-json.mbt
 tar.mbt
-testdata/sample.json
-testdata/sample.jsonl
 testdata/sample.tar

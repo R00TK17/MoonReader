@@ -13,6 +13,16 @@ fn main {
       for row in rows {
         println(join(row, " | "))
       }
+    } else if path.has_suffix(".jsonl".view()) {
+      let js = @moonreader.read_jsonl_by_line(path)
+      println("JSONL 行数: " + js.length().to_string())
+      for j in js {
+        println(j.stringify())
+      }
+    } else if path.has_suffix(".json".view()) {
+      let j = @moonreader.read_json_dynamic(path)
+      println("JSON 解析成功:")
+      println(j.stringify(indent=2))
     } else {
       // 未知扩展名，默认按 TXT 按行读取
       let lines = @moonreader.read_txt_by_line(path)
@@ -31,8 +41,10 @@ fn print_usage() -> Unit {
   println("")
   println("用法: main <文件路径>")
   println("  根据扩展名自动识别格式:")
-  println("    .txt → 按行读取文本")
-  println("    .csv → 按行读取 CSV")
+  println("    .txt   → 按行读取文本")
+  println("    .csv   → 按行读取 CSV")
+  println("    .json  → 解析 JSON")
+  println("    .jsonl → 按行解析 JSONL")
 }
 
 /// 把字符串数组用分隔符拼成一个字符串

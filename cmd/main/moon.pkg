@@ -1,6 +1,7 @@
 import {
   "R00TK17/moonreader",
   "moonbitlang/core/env",
+  "moonbitlang/core/json",
 }
 
 pkgtype(kind: "executable")
