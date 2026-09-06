@@ -18,6 +18,12 @@ extern "C" fn read_file_utf8_ffi(path : Bytes) -> Handler = "moonreader_read_fil
 extern "C" fn is_null(ptr : Handler) -> Int = "moonreader_is_null"
 
 ///|
+/// 用 UTF-8 路径把字节写入文件（覆盖写），返回 0 成功 / 非 0 失败
+#borrow(path, data)
+extern "C" fn write_file_utf8_ffi(path : Bytes, data : Bytes) -> Int =
+  "moonreader_write_file_utf8"
+
+///|
 /// Handler 转 Bytes（两者底层都是字节数组指针）
 fn handler_to_bytes(h : Handler) -> Bytes = "%identity"
 
@@ -31,4 +37,14 @@ pub fn read_file_to_bytes_utf8(path : String) -> Bytes raise ReaderError {
     raise ReaderError::Io("读取文件失败: " + path)
   }
   handler_to_bytes(h)
+}
+
+///|
+/// 以 UTF-8 路径把字节写入文件（覆盖写，支持中文文件名）
+pub fn write_file_to_bytes_utf8(path : String, data : Bytes) -> Unit raise ReaderError {
+  let path_bytes = @utf8.encode(path.to_string_view())
+  let r = write_file_utf8_ffi(path_bytes, data)
+  if r != 0 {
+    raise ReaderError::Io("写入文件失败: " + path)
+  }
 }

@@ -6,6 +6,14 @@ fn main {
     print_usage()
     return
   }
+  if args[1] == "convert" {
+    try {
+      print_convert(args)
+    } catch {
+      _ => println("转换失败")
+    }
+    return
+  }
   let path = args[1]
   let fmt = @moonreader.detect_format(path)
   try {
@@ -175,11 +183,56 @@ fn print_tar(
 }
 
 ///|
+/// 编码转换：convert <文件路径> <目标编码> [源编码] [输出路径]
+/// 源编码缺省自动检测；输出路径缺省覆盖写回原文件。
+fn print_convert(args : Array[String]) -> Unit raise @moonreader.ReaderError {
+  // args: [程序名, "convert", 路径, 目标编码, (源编码), (输出路径)]
+  if args.length() < 4 {
+    println(
+      "用法: convert <文件路径> <目标编码> [源编码] [输出路径]",
+    )
+    println("  目标编码 / 源编码: utf-8 utf-16 utf-16le utf-16be gbk big5 latin1")
+    return
+  }
+  let path = args[2]
+  let to = match @moonreader.parse_encoding(args[3]) {
+    Some(e) => e
+    None => {
+      println("未知目标编码: " + args[3])
+      return
+    }
+  }
+  let bytes = @moonreader.read_file_to_bytes_utf8(path)
+  // 源编码：显式指定则用之，否则自动检测
+  let (from, src_desc) = if args.length() >= 5 {
+    match @moonreader.parse_encoding(args[4]) {
+      Some(e) => (e, args[4])
+      None => {
+        println("未知源编码: " + args[4])
+        return
+      }
+    }
+  } else {
+    (@moonreader.detect_encoding(bytes), "自动检测")
+  }
+  let out = @moonreader.convert(bytes, from, to)
+  let out_path = if args.length() >= 6 { args[5] } else { path }
+  @moonreader.write_file_to_bytes_utf8(out_path, out)
+  println(
+    "已转换: " + path + " (" + src_desc + " → " + args[3] + ")",
+  )
+  println("输出: " + out_path + " (" + out.length().to_string() + " 字节)")
+}
+
+///|
 fn print_usage() -> Unit {
   println("MoonReader — MoonBit 文件读取演示")
   println("")
   println(
     "用法: moon run cmd/main -- <文件路径> [包内文件名] [编码]",
+  )
+  println(
+    "  编码转换: moon run cmd/main -- convert <文件路径> <目标编码> [源编码] [输出路径]",
   )
   println(
     "  根据扩展名自动识别格式；文本内容默认自动检测编码:",

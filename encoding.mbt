@@ -165,6 +165,182 @@ pub fn parse_encoding(name : String) -> Encoding? {
   }
 }
 
+///|
+/// 按指定编码把字符串编码为字节序列。
+/// 不可映射的字符替换为 '?'（0x3F）。bom 为 true 时对 UTF-8/16/32 写出 BOM。
+pub fn encode(text : String, encoding : Encoding, bom? : Bool = false) -> Bytes {
+  match encoding {
+    Encoding::Utf8 => @utf8.encode(text.to_string_view(), bom~)
+    Encoding::Utf16Le =>
+      @utf16.encode(text.to_string_view(), bom~, endianness=@utf16.Endian::Little)
+    Encoding::Utf16Be =>
+      @utf16.encode(text.to_string_view(), bom~, endianness=@utf16.Endian::Big)
+    Encoding::Utf32Le => utf32_encode(text, false, bom)
+    Encoding::Utf32Be => utf32_encode(text, true, bom)
+    Encoding::Gbk => gbk_encode(text)
+    Encoding::Big5 => big5_encode(text)
+    Encoding::Latin1 => latin1_encode(text)
+  }
+}
+
+///|
+/// 在任意两种编码之间转换字节内容：先按 from 解码，再按 to 编码。
+/// 等价于 encode(decode(bytes, from), to)。
+pub fn convert(bytes : Bytes, from : Encoding, to : Encoding) -> Bytes {
+  encode(decode(bytes, from), to)
+}
+
+// ---------------- 编码辅助 ----------------
+
+///|
+/// UTF-32 编码（big=true 大端），可选 BOM
+fn utf32_encode(text : String, big : Bool, bom : Bool) -> Bytes {
+  let out : Array[Byte] = []
+  if bom {
+    if big {
+      out.push(b'\x00')
+      out.push(b'\x00')
+      out.push(b'\xFE')
+      out.push(b'\xFF')
+    } else {
+      out.push(b'\xFF')
+      out.push(b'\xFE')
+      out.push(b'\x00')
+      out.push(b'\x00')
+    }
+  }
+  for c in text {
+    let cp = c.to_int()
+    if big {
+      out.push(((cp >> 24) & 0xFF).to_byte())
+      out.push(((cp >> 16) & 0xFF).to_byte())
+      out.push(((cp >> 8) & 0xFF).to_byte())
+      out.push((cp & 0xFF).to_byte())
+    } else {
+      out.push((cp & 0xFF).to_byte())
+      out.push(((cp >> 8) & 0xFF).to_byte())
+      out.push(((cp >> 16) & 0xFF).to_byte())
+      out.push(((cp >> 24) & 0xFF).to_byte())
+    }
+  }
+  Bytes::from_array(out)
+}
+
+///|
+/// Latin-1 编码：码点 ≤ 0xFF 直写，否则 '?'
+fn latin1_encode(text : String) -> Bytes {
+  let out : Array[Byte] = []
+  for c in text {
+    let cp = c.to_int()
+    if cp <= 0xFF {
+      out.push(cp.to_byte())
+    } else {
+      out.push(b'\x3F')
+    }
+  }
+  Bytes::from_array(out)
+}
+
+///|
+/// GBK 编码：ASCII 直通，其余查反向表，不可映射写 '?'
+fn gbk_encode(text : String) -> Bytes {
+  let out : Array[Byte] = []
+  for c in text {
+    let cp = c.to_int()
+    if cp < 0x80 {
+      out.push(cp.to_byte())
+    } else {
+      let lin = gbk_enc_lookup(cp)
+      if lin < 0 {
+        out.push(b'\x3F')
+      } else {
+        let lead = 0x81 + lin / 190
+        let slot = lin % 190
+        let trail = if slot < 0x3F { slot + 0x40 } else { slot + 0x41 }
+        out.push(lead.to_byte())
+        out.push(trail.to_byte())
+      }
+    }
+  }
+  Bytes::from_array(out)
+}
+
+///|
+/// Big5 编码：ASCII 直通，其余查反向表，不可映射写 '?'
+fn big5_encode(text : String) -> Bytes {
+  let out : Array[Byte] = []
+  for c in text {
+    let cp = c.to_int()
+    if cp < 0x80 {
+      out.push(cp.to_byte())
+    } else {
+      let lin = big5_enc_lookup(cp)
+      if lin < 0 {
+        out.push(b'\x3F')
+      } else {
+        let lead = 0x81 + lin / 157
+        let slot = lin % 157
+        let trail = if slot < 63 { slot + 0x40 } else { slot + 0x62 }
+        out.push(lead.to_byte())
+        out.push(trail.to_byte())
+      }
+    }
+  }
+  Bytes::from_array(out)
+}
+
+///|
+/// GBK 反向查找：Unicode 码点 → 线性索引（二分），找不到返回 -1
+fn gbk_enc_lookup(cp : Int) -> Int {
+  let n = gbk_encode_table.length() / 4
+  let mut lo = 0
+  let mut hi = n - 1
+  while lo <= hi {
+    let mid = (lo + hi) / 2
+    let off = mid * 4
+    let c =
+      gbk_encode_table[off].to_int() |
+      (gbk_encode_table[off + 1].to_int() << 8)
+    if c == cp {
+      let idx =
+        gbk_encode_table[off + 2].to_int() |
+        (gbk_encode_table[off + 3].to_int() << 8)
+      return idx
+    } else if c < cp {
+      lo = mid + 1
+    } else {
+      hi = mid - 1
+    }
+  }
+  -1
+}
+
+///|
+/// Big5 反向查找：Unicode 码点 → 线性索引（二分），找不到返回 -1
+fn big5_enc_lookup(cp : Int) -> Int {
+  let n = big5_encode_table.length() / 4
+  let mut lo = 0
+  let mut hi = n - 1
+  while lo <= hi {
+    let mid = (lo + hi) / 2
+    let off = mid * 4
+    let c =
+      big5_encode_table[off].to_int() |
+      (big5_encode_table[off + 1].to_int() << 8)
+    if c == cp {
+      let idx =
+        big5_encode_table[off + 2].to_int() |
+        (big5_encode_table[off + 3].to_int() << 8)
+      return idx
+    } else if c < cp {
+      lo = mid + 1
+    } else {
+      hi = mid - 1
+    }
+  }
+  -1
+}
+
 // ---------------- 检测辅助 ----------------
 
 ///|
