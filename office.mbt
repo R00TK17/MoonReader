@@ -49,9 +49,7 @@ pub fn read_excel_sheets(path : String) -> Array[ExcelSheet] raise ReaderError {
 
 ///|
 /// 读取 xlsx 第一个工作表为二维表（行 → 单元格），共享字符串已解析为文本
-pub fn read_excel_as_rows(
-  path : String,
-) -> Array[Array[String]] raise ReaderError {
+pub fn read_excel_rows(path : String) -> Array[Array[String]] raise ReaderError {
   let sheets = read_excel_sheets(path)
   if sheets.length() > 0 {
     return sheets[0].rows
@@ -61,8 +59,8 @@ pub fn read_excel_as_rows(
 
 ///|
 /// 读取 xlsx 第一个工作表为字符串（单元格用制表符分隔，行用换行分隔）
-pub fn read_excel_as_string(path : String) -> String raise ReaderError {
-  let rows = read_excel_as_rows(path)
+pub fn read_excel_text(path : String) -> String raise ReaderError {
+  let rows = read_excel_rows(path)
   rows.map(fn(r) { r.join("\t") }).join("\n")
 }
 

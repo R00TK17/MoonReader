@@ -7,9 +7,7 @@ fn main {
     return
   }
   if args[1] == "convert" {
-    try {
-      print_convert(args)
-    } catch {
+    print_convert(args) catch {
       _ => println("转换失败")
     }
     return
@@ -191,7 +189,9 @@ fn print_convert(args : Array[String]) -> Unit raise @moonreader.ReaderError {
     println(
       "用法: convert <文件路径> <目标编码> [源编码] [输出路径]",
     )
-    println("  目标编码 / 源编码: utf-8 utf-16 utf-16le utf-16be gbk big5 latin1")
+    println(
+      "  目标编码 / 源编码: utf-8 utf-16 utf-16le utf-16be gbk big5 latin1",
+    )
     return
   }
   let path = args[2]
@@ -218,9 +218,7 @@ fn print_convert(args : Array[String]) -> Unit raise @moonreader.ReaderError {
   let out = @moonreader.convert(bytes, from, to)
   let out_path = if args.length() >= 6 { args[5] } else { path }
   @moonreader.write_file_to_bytes_utf8(out_path, out)
-  println(
-    "已转换: " + path + " (" + src_desc + " → " + args[3] + ")",
-  )
+  println("已转换: " + path + " (" + src_desc + " → " + args[3] + ")")
   println("输出: " + out_path + " (" + out.length().to_string() + " 字节)")
 }
 

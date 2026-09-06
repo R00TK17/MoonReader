@@ -141,8 +141,8 @@ test "read_docx_text 读取 Word 文档段落" {
 }
 
 ///|
-test "read_excel_as_rows 读取 Excel 表格" {
-  let rows = @moonreader.read_excel_as_rows("testdata/sample.xlsx")
+test "read_excel_rows 读取 Excel 表格" {
+  let rows = @moonreader.read_excel_rows("testdata/sample.xlsx")
   assert_eq(rows.length(), 3)
   assert_eq(rows[0].length(), 2)
   assert_eq(rows[0][0], "何庄")
@@ -327,9 +327,9 @@ test "read_xml 自动检测 GBK 编码" {
 }
 
 ///|
-test "read_json_dynamic 自动检测 GBK 编码" {
+test "read_json 自动检测 GBK 编码" {
   assert_eq(
-    @moonreader.read_json_dynamic("testdata/encoding_gbk.json").stringify(),
+    @moonreader.read_json("testdata/encoding_gbk.json").stringify(),
     "{\"姓名\":\"张三\"}",
   )
 }
@@ -349,30 +349,24 @@ test "read_csv_by_line 显式指定 GBK 解码" {
 ///|
 test "encode 编码 GBK 字节正确" {
   let bytes = @moonreader.encode("中文", @moonreader.Encoding::Gbk)
-  assert_eq(
-    bytes,
-    Bytes::from_array([b'\xD6', b'\xD0', b'\xCE', b'\xC4']),
-  )
+  assert_eq(bytes, Bytes::from_array([b'\xD6', b'\xD0', b'\xCE', b'\xC4']))
 }
 
 ///|
 test "encode 编码 UTF-8 与解码往返" {
   let utf8 = @moonreader.encode("中文编码", @moonreader.Encoding::Utf8)
-  assert_eq(@moonreader.decode(utf8, @moonreader.Encoding::Utf8), "中文编码")
+  assert_eq(
+    @moonreader.decode(utf8, @moonreader.Encoding::Utf8),
+    "中文编码",
+  )
 }
 
 ///|
 test "encode 编码 UTF-16LE 带 BOM" {
-  let b = @moonreader.encode(
-    "中文",
-    @moonreader.Encoding::Utf16Le,
-    bom=true,
-  )
+  let b = @moonreader.encode("中文", @moonreader.Encoding::Utf16Le, bom=true)
   assert_eq(
     b,
-    Bytes::from_array([
-      b'\xFF', b'\xFE', b'\x2D', b'\x4E', b'\x87', b'\x65',
-    ]),
+    Bytes::from_array([b'\xFF', b'\xFE', b'\x2D', b'\x4E', b'\x87', b'\x65']),
   )
 }
 
@@ -401,7 +395,10 @@ test "convert UTF-8 转 GBK 再转回" {
     @moonreader.Encoding::Gbk,
     @moonreader.Encoding::Utf8,
   )
-  assert_eq(@moonreader.decode(back, @moonreader.Encoding::Utf8), "中文编码")
+  assert_eq(
+    @moonreader.decode(back, @moonreader.Encoding::Utf8),
+    "中文编码",
+  )
 }
 
 ///|

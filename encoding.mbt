@@ -172,7 +172,11 @@ pub fn encode(text : String, encoding : Encoding, bom? : Bool = false) -> Bytes 
   match encoding {
     Encoding::Utf8 => @utf8.encode(text.to_string_view(), bom~)
     Encoding::Utf16Le =>
-      @utf16.encode(text.to_string_view(), bom~, endianness=@utf16.Endian::Little)
+      @utf16.encode(
+        text.to_string_view(),
+        bom~,
+        endianness=@utf16.Endian::Little,
+      )
     Encoding::Utf16Be =>
       @utf16.encode(text.to_string_view(), bom~, endianness=@utf16.Endian::Big)
     Encoding::Utf32Le => utf32_encode(text, false, bom)
@@ -298,12 +302,10 @@ fn gbk_enc_lookup(cp : Int) -> Int {
   while lo <= hi {
     let mid = (lo + hi) / 2
     let off = mid * 4
-    let c =
-      gbk_encode_table[off].to_int() |
+    let c = gbk_encode_table[off].to_int() |
       (gbk_encode_table[off + 1].to_int() << 8)
     if c == cp {
-      let idx =
-        gbk_encode_table[off + 2].to_int() |
+      let idx = gbk_encode_table[off + 2].to_int() |
         (gbk_encode_table[off + 3].to_int() << 8)
       return idx
     } else if c < cp {
@@ -324,12 +326,10 @@ fn big5_enc_lookup(cp : Int) -> Int {
   while lo <= hi {
     let mid = (lo + hi) / 2
     let off = mid * 4
-    let c =
-      big5_encode_table[off].to_int() |
+    let c = big5_encode_table[off].to_int() |
       (big5_encode_table[off + 1].to_int() << 8)
     if c == cp {
-      let idx =
-        big5_encode_table[off + 2].to_int() |
+      let idx = big5_encode_table[off + 2].to_int() |
         (big5_encode_table[off + 3].to_int() << 8)
       return idx
     } else if c < cp {

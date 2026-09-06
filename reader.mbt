@@ -38,7 +38,7 @@ pub fn read(path : String) -> Content raise ReaderError {
   match detect_format(path) {
     FileFormat::Txt => Content::Lines(read_txt_by_line(path))
     FileFormat::Csv => Content::Table(read_csv_by_line(path))
-    FileFormat::Json => Content::JsonValue(read_json_dynamic(path))
+    FileFormat::Json => Content::JsonValue(read_json(path))
     FileFormat::Jsonl => Content::JsonRows(read_jsonl_by_line(path))
     FileFormat::Xml => Content::XmlDoc(read_xml(path))
     FileFormat::Markdown => Content::MarkdownBlocks(read_markdown(path))

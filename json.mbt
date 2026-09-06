@@ -11,7 +11,7 @@ fn parse_json(s : String) -> Json raise ReaderError {
 
 ///|
 /// 解析 JSON 文件为动态值（Json）
-pub fn read_json_dynamic(
+pub fn read_json(
   file_path : String,
   encoding? : Encoding? = None,
 ) -> Json raise ReaderError {
@@ -25,7 +25,7 @@ pub fn read_json_by_block(
   block_size : Int,
   encoding? : Encoding? = None,
 ) -> Array[Array[Json]] raise ReaderError {
-  let root = read_json_dynamic(file_path, encoding~)
+  let root = read_json(file_path, encoding~)
   let arr = match root {
     Array(a) => a
     _ => raise ReaderError::Parse("JSON 顶层不是数组")

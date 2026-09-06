@@ -6,6 +6,8 @@ import {
 }
 
 // Values
+pub fn convert(Bytes, Encoding, Encoding) -> Bytes
+
 pub fn decode(Bytes, Encoding) -> String
 
 pub fn decode_auto(Bytes) -> String
@@ -17,6 +19,8 @@ pub fn decode_gbk(Bytes) -> String
 pub fn detect_encoding(Bytes) -> Encoding
 
 pub fn detect_format(String) -> FileFormat
+
+pub fn encode(String, Encoding, bom? : Bool) -> Bytes
 
 pub fn list_tar_filenames(String) -> Array[String] raise ReaderError
 
@@ -40,17 +44,17 @@ pub fn read_docx_paragraphs(String) -> Array[String] raise ReaderError
 
 pub fn read_docx_text(String) -> String raise ReaderError
 
-pub fn read_excel_as_rows(String) -> Array[Array[String]] raise ReaderError
-
-pub fn read_excel_as_string(String) -> String raise ReaderError
+pub fn read_excel_rows(String) -> Array[Array[String]] raise ReaderError
 
 pub fn read_excel_sheets(String) -> Array[ExcelSheet] raise ReaderError
 
+pub fn read_excel_text(String) -> String raise ReaderError
+
 pub fn read_file_to_bytes_utf8(String) -> Bytes raise ReaderError
 
-pub fn read_json_by_block(String, Int, encoding? : Encoding?) -> Array[Array[Json]] raise ReaderError
+pub fn read_json(String, encoding? : Encoding?) -> Json raise ReaderError
 
-pub fn read_json_dynamic(String, encoding? : Encoding?) -> Json raise ReaderError
+pub fn read_json_by_block(String, Int, encoding? : Encoding?) -> Array[Array[Json]] raise ReaderError
 
 pub fn read_jsonl_by_line(String, encoding? : Encoding?) -> Array[Json] raise ReaderError
 
@@ -85,6 +89,8 @@ pub fn read_zip_entries(String) -> Array[ZipEntry] raise ReaderError
 pub fn read_zip_file(String, String) -> Bytes raise ReaderError
 
 pub fn read_zip_text(String, String, encoding? : Encoding?) -> String raise ReaderError
+
+pub fn write_file_to_bytes_utf8(String, Bytes) -> Unit raise ReaderError
 
 // Errors
 pub(all) suberror ReaderError {

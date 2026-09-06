@@ -7,8 +7,7 @@
 // ============================================================
 
 ///|
-let big5_enc_table_b64 : String =
-  "pwDvE68AABSwAFUUsQARFLcAsBPXAA8U9wAQFMcCNhXJAjQVygI1FcsCNxXNAgMU2QIzFZED3hSS" +
+let big5_enc_table_b64 : String = "pwDvE68AABSwAFUUsQARFLcAsBPXAA8U9wAQFMcCNhXJAjQVygI1FcsCNxXNAgMU2QIzFZED3hSS" +
   "A98UkwPgFJQD4RSVA+IUlgPjFJcD5BSYA+UUmQPmFJoD5xSbA+gUnAPpFJ0D6hSeA+sUnwPsFKAD" +
   "7RShA+4UowPvFKQD8BSlA/EUpgPyFKcD8xSoA/QUqQP1FLED9hSyA/cUswP4FLQD+RS1A/oUtgP7" +
   "FLcD/BS4A/0UuQP+FLoD/xS7AwAVvAMBFb0DAhW+AwMVvwMEFcADBRXBAwYVwwMHFcQDCBXFAwkV" +
@@ -958,4 +957,6 @@ let big5_enc_table_b64 : String =
   "FFv/wRNc/7UTXf/CE17/IRTg/0MU4f9EFOP/ARTl/0EU"
 
 ///|
-let big5_encode_table : Array[Byte] = @base64.decode_lossy(big5_enc_table_b64.view()).to_array()
+let big5_encode_table : Array[Byte] = @base64.decode_lossy(
+  big5_enc_table_b64.view(),
+).to_array()
