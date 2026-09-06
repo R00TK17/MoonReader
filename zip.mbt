@@ -23,15 +23,17 @@ pub fn read_zip_entries(
   file_path : String,
 ) -> Array[ZipEntry] raise ReaderError {
   let data = read_txt_by_byte(file_path).to_fixedarray()
-  let items = try {
-    @fzip.unzip_sync(data)
-  } catch {
-    FzipError(message~, ..) => raise ReaderError::Parse("ZIP 解压失败: " + message)
+  let items = @fzip.unzip_sync(data) catch {
+    FzipError(message~, ..) =>
+      raise ReaderError::Parse("ZIP 解压失败: " + message)
   }
   let entries : Array[ZipEntry] = []
   for kv in items {
     let (name, content) = kv
-    entries.push({ name, content: Bytes::from_array(content.iter().to_array()) })
+    entries.push({
+      name,
+      content: Bytes::from_array(content.iter().to_array()),
+    })
   }
   entries
 }
@@ -42,10 +44,9 @@ pub fn list_zip_filenames(
   file_path : String,
 ) -> Array[String] raise ReaderError {
   let data = read_txt_by_byte(file_path).to_fixedarray()
-  let infos = try {
-    @fzip.unzip_list(data)
-  } catch {
-    FzipError(message~, ..) => raise ReaderError::Parse("ZIP 解析失败: " + message)
+  let infos = @fzip.unzip_list(data) catch {
+    FzipError(message~, ..) =>
+      raise ReaderError::Parse("ZIP 解析失败: " + message)
   }
   infos.map(fn(info) { info.name })
 }

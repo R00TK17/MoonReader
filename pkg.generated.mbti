@@ -1,0 +1,157 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "R00TK17/moonreader"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn detect_format(String) -> FileFormat
+
+pub fn list_tar_filenames(String) -> Array[String] raise ReaderError
+
+pub fn list_zip_filenames(String) -> Array[String] raise ReaderError
+
+pub fn parse_markdown(String) -> Array[MarkdownBlock]
+
+pub fn parse_xml(String) -> XmlElement raise ReaderError
+
+pub fn read(String) -> Content raise ReaderError
+
+pub fn read_csv_by_block(String, Int) -> Array[Array[Array[String]]] raise ReaderError
+
+pub fn read_csv_by_column(String) -> Array[Array[String]] raise ReaderError
+
+pub fn read_csv_by_line(String) -> Array[Array[String]] raise ReaderError
+
+pub fn read_docx_paragraphs(String) -> Array[String] raise ReaderError
+
+pub fn read_docx_text(String) -> String raise ReaderError
+
+pub fn read_excel_as_rows(String) -> Array[Array[String]] raise ReaderError
+
+pub fn read_excel_as_string(String) -> String raise ReaderError
+
+pub fn read_excel_sheets(String) -> Array[ExcelSheet] raise ReaderError
+
+pub fn read_file_to_bytes_utf8(String) -> Bytes raise ReaderError
+
+pub fn read_json_by_block(String, Int) -> Array[Array[Json]] raise ReaderError
+
+pub fn read_json_dynamic(String) -> Json raise ReaderError
+
+pub fn read_jsonl_by_line(String) -> Array[Json] raise ReaderError
+
+pub fn read_markdown(String) -> Array[MarkdownBlock] raise ReaderError
+
+pub fn read_pdf_text(String) -> String raise ReaderError
+
+pub fn read_pdf_text_by_page(String) -> Array[String] raise ReaderError
+
+pub fn read_pptx_text(String) -> String raise ReaderError
+
+pub fn read_pptx_text_by_slide(String) -> Array[String] raise ReaderError
+
+pub fn read_tar_entries(String) -> Array[TarEntry] raise ReaderError
+
+pub fn read_tar_file(String, String) -> Bytes raise ReaderError
+
+pub fn read_tar_text(String, String) -> String raise ReaderError
+
+pub fn read_txt(String) -> String raise ReaderError
+
+pub fn read_txt_by_block(String, Int) -> Array[String] raise ReaderError
+
+pub fn read_txt_by_byte(String) -> Bytes raise ReaderError
+
+pub fn read_txt_by_line(String) -> Array[String] raise ReaderError
+
+pub fn read_xml(String) -> XmlElement raise ReaderError
+
+pub fn read_zip_entries(String) -> Array[ZipEntry] raise ReaderError
+
+pub fn read_zip_file(String, String) -> Bytes raise ReaderError
+
+pub fn read_zip_text(String, String) -> String raise ReaderError
+
+// Errors
+pub(all) suberror ReaderError {
+  Io(String)
+  Parse(String)
+}
+
+// Types and methods
+pub enum Content {
+  Lines(Array[String])
+  Table(Array[Array[String]])
+  JsonValue(Json)
+  JsonRows(Array[Json])
+  XmlDoc(XmlElement)
+  MarkdownBlocks(Array[MarkdownBlock])
+  ZipFiles(Array[String])
+  TarFiles(Array[String])
+  DocxText(String)
+  ExcelSheets(Array[ExcelSheet])
+  PptxSlides(Array[String])
+  PdfPages(Array[String])
+}
+
+pub(all) struct ExcelSheet {
+  name : String
+  rows : Array[Array[String]]
+}
+
+pub(all) enum FileFormat {
+  Txt
+  Csv
+  Json
+  Jsonl
+  Xml
+  Markdown
+  Zip
+  Tar
+  Docx
+  Xlsx
+  Pptx
+  Pdf
+} derive(Eq, @debug.Debug)
+
+pub(all) enum MarkdownBlock {
+  Heading(Int, String)
+  Paragraph(String)
+  CodeBlock(String, String)
+  Quote(String)
+  ListItem(String)
+  HorizontalRule
+} derive(Eq, @debug.Debug)
+pub fn MarkdownBlock::to_string(Self) -> String
+
+pub(all) struct TarEntry {
+  name : String
+  content : Bytes
+}
+pub fn TarEntry::text(Self) -> String
+
+pub(all) struct XmlElement {
+  name : String
+  attrs : Array[(String, String)]
+  children : Array[XmlNode]
+}
+pub fn XmlElement::attr(Self, String) -> String?
+pub fn XmlElement::text(Self) -> String
+pub fn XmlElement::to_string(Self) -> String
+
+pub(all) enum XmlNode {
+  Text(String)
+  Element(XmlElement)
+}
+
+pub(all) struct ZipEntry {
+  name : String
+  content : Bytes
+}
+pub fn ZipEntry::text(Self) -> String
+
+// Type aliases
+
+// Traits

@@ -42,7 +42,7 @@ pub fn read_excel_sheets(path : String) -> Array[ExcelSheet] raise ReaderError {
   for kv in refs {
     let (name, target) = kv
     let sheet = parse_xml(entry_text(entries, target))
-    out.push({ name, rows: sheet_rows(sheet, shared) })
+    out.push({ name, rows: sheet_rows(sheet, shared), })
   }
   out
 }
@@ -73,7 +73,7 @@ pub fn read_pptx_text_by_slide(
 ) -> Array[String] raise ReaderError {
   let entries = read_zip_entries(path)
   let slides = slide_names(entries)
-  slides.map((s) => slide_text(parse_xml(entry_text(entries, s))))
+  slides.map(s => slide_text(parse_xml(entry_text(entries, s))))
 }
 
 ///|
@@ -88,7 +88,10 @@ pub fn read_pptx_text(path : String) -> String raise ReaderError {
 
 ///|
 /// 在包内条目中查找指定名称并解码为 UTF-8 字符串
-fn entry_text(entries : Array[ZipEntry], name : String) -> String raise ReaderError {
+fn entry_text(
+  entries : Array[ZipEntry],
+  name : String,
+) -> String raise ReaderError {
   for e in entries {
     if e.name == name {
       return @utf8.decode_lossy(e.content)
@@ -117,11 +120,7 @@ fn collect_elems(root : XmlElement, name : String) -> Array[XmlElement] {
 }
 
 ///|
-fn collect_walk(
-  e : XmlElement,
-  name : String,
-  out : Array[XmlElement],
-) -> Unit {
+fn collect_walk(e : XmlElement, name : String, out : Array[XmlElement]) -> Unit {
   if e.name == name {
     out.push(e)
   }
@@ -137,14 +136,14 @@ fn collect_walk(
 /// docx：按段落收集 w:t 文本
 fn docx_paragraphs(doc : XmlElement) -> Array[String] {
   let paras = collect_elems(doc, "w:p")
-  paras.map(fn(p) {
-    collect_elems(p, "w:t").map(fn(t) { t.text() }).join("")
-  })
+  paras.map(fn(p) { collect_elems(p, "w:t").map(fn(t) { t.text() }).join("") })
 }
 
 ///|
 /// xlsx：解析共享字符串表，返回按索引排列的字符串数组（无表则为空）
-fn parse_shared_strings(entries : Array[ZipEntry]) -> Array[String] raise ReaderError {
+fn parse_shared_strings(
+  entries : Array[ZipEntry],
+) -> Array[String] raise ReaderError {
   if !has_entry(entries, "xl/sharedStrings.xml") {
     return []
   }
@@ -155,7 +154,9 @@ fn parse_shared_strings(entries : Array[ZipEntry]) -> Array[String] raise Reader
 
 ///|
 /// xlsx：从 workbook.xml + 关系表解析出 (工作表名, 表文件路径) 列表，按显示顺序
-fn sheet_refs(entries : Array[ZipEntry]) -> Array[(String, String)] raise ReaderError {
+fn sheet_refs(
+  entries : Array[ZipEntry],
+) -> Array[(String, String)] raise ReaderError {
   if !has_entry(entries, "xl/workbook.xml") {
     return [("Sheet1", "xl/worksheets/sheet1.xml")]
   }
@@ -238,9 +239,7 @@ fn cell_text(c : XmlElement, shared : Array[String]) -> String {
       }
       ""
     }
-    Some("inlineStr") => {
-      collect_elems(c, "t").map(fn(t) { t.text() }).join("")
-    }
+    Some("inlineStr") => collect_elems(c, "t").map(fn(t) { t.text() }).join("")
     _ => {
       let vs = collect_elems(c, "v")
       if vs.length() > 0 {
@@ -293,9 +292,9 @@ fn slide_number(name : String) -> Int {
 /// pptx：抽取单页文本（按 a:p 段落、a:t 文本）
 fn slide_text(slide : XmlElement) -> String {
   let paras = collect_elems(slide, "a:p")
-  paras.map(fn(p) {
-    collect_elems(p, "a:t").map(fn(t) { t.text() }).join("")
-  }).join("\n")
+  paras
+  .map(fn(p) { collect_elems(p, "a:t").map(fn(t) { t.text() }).join("") })
+  .join("\n")
 }
 
 ///|

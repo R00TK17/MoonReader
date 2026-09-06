@@ -30,7 +30,7 @@ pub fn read_pdf_text_by_page(path : String) -> Array[String] raise ReaderError {
     _ => raise ReaderError::Parse("PDF Catalog 无效")
   }
   let pages_num = match dict_get(root_dict, "Pages") {
-    Some(PRef(n, _)) => n
+    Some(PRef(n)) => n
     _ => raise ReaderError::Parse("PDF 缺少 Pages")
   }
   let pages = collect_pages(doc, pages_num)
@@ -56,14 +56,11 @@ pub fn read_pdf_text_by_page(path : String) -> Array[String] raise ReaderError {
 ///|
 /// PDF 值：动态类型
 priv enum PdfValue {
-  PNull
-  PBool(Bool)
-  PNum
   PStr(Bytes)
   PName(String)
   PArr(Array[PdfValue])
   PDict(Array[(String, PdfValue)])
-  PRef(Int, Int)
+  PRef(Int)
 }
 
 ///|
@@ -104,46 +101,46 @@ fn parse_pdf(data : Array[Byte]) -> PdfDoc raise ReaderError {
     match try_obj_header(data, n, i) {
       Some((num, _gen, after)) => {
         let pos = @ref.new(after)
-        let value = parse_value(data, n, pos)
-        pdf_skip_ws(data, n, pos)
-        let mut stream : Bytes? = None
-        if matches_word(data, n, pos, "stream") {
-          pos.val = pos.val + 6
-          if pos.val < n && data[pos.val] == b'\r' {
-            pos.val = pos.val + 1
+        match parse_value(data, n, pos) {
+          None => i = pos.val
+          Some(value) => {
+            pdf_skip_ws(data, n, pos)
+            let mut stream : Bytes? = None
+            if matches_word(data, n, pos, "stream") {
+              pos.val = pos.val + 6
+              if pos.val < n && data[pos.val] == b'\r' {
+                pos.val = pos.val + 1
+              }
+              if pos.val < n && data[pos.val] == b'\n' {
+                pos.val = pos.val + 1
+              }
+              let start = pos.val
+              let e = find_endstream(data, start, n)
+              if e < 0 {
+                raise ReaderError::Parse("PDF 流缺少 endstream")
+              }
+              let rawb = slice_bytes(data, start, e)
+              let mut e2 = rawb.length()
+              while e2 > 0 && (rawb[e2 - 1] == b'\r' || rawb[e2 - 1] == b'\n') {
+                e2 = e2 - 1
+              }
+              stream = Some(Bytes::from_array(slice_bytes(rawb, 0, e2)))
+              pos.val = e + 9
+            }
+            objs.push((num, { value, stream, }))
+            i = pos.val
           }
-          if pos.val < n && data[pos.val] == b'\n' {
-            pos.val = pos.val + 1
-          }
-          let start = pos.val
-          let e = find_endstream(data, start, n)
-          if e < 0 {
-            raise ReaderError::Parse("PDF 流缺少 endstream")
-          }
-          let rawb = slice_bytes(data, start, e)
-          let mut e2 = rawb.length()
-          while e2 > 0 && (rawb[e2 - 1] == b'\r' || rawb[e2 - 1] == b'\n') {
-            e2 = e2 - 1
-          }
-          stream = Some(Bytes::from_array(slice_bytes(rawb, 0, e2)))
-          pos.val = e + 9
         }
-        objs.push((num, { value, stream }))
-        i = pos.val
       }
       None => i = i + 1
     }
   }
-  { objects: objs }
+  { objects: objs, }
 }
 
 ///|
 /// 尝试在 i 处解析 "N G obj" 头部，成功返回 (对象号, 代, 头部之后的位置)
-fn try_obj_header(
-  data : Array[Byte],
-  n : Int,
-  i : Int,
-) -> (Int, Int, Int)? {
+fn try_obj_header(data : Array[Byte], n : Int, i : Int) -> (Int, Int, Int)? {
   let mut p = i
   let mut num = 0
   while p < n && is_digit(data[p]) {
@@ -219,7 +216,7 @@ fn parse_value(
   data : Array[Byte],
   n : Int,
   pos : Ref[Int],
-) -> PdfValue raise ReaderError {
+) -> PdfValue? raise ReaderError {
   pdf_skip_ws(data, n, pos)
   if pos.val >= n {
     raise ReaderError::Parse("PDF 解析意外结束")
@@ -227,29 +224,29 @@ fn parse_value(
   let c = data[pos.val]
   if c == b'<' {
     if pos.val + 1 < n && data[pos.val + 1] == b'<' {
-      parse_dict(data, n, pos)
+      Some(parse_dict(data, n, pos))
     } else {
-      parse_hex_string(data, n, pos)
+      Some(parse_hex_string(data, n, pos))
     }
   } else if c == b'(' {
-    parse_lit_string(data, n, pos)
+    Some(parse_lit_string(data, n, pos))
   } else if c == b'[' {
-    parse_array(data, n, pos)
+    Some(parse_array(data, n, pos))
   } else if c == b'/' {
-    parse_name_value(data, n, pos)
+    Some(parse_name_value(data, n, pos))
   } else if c == b't' && matches_word(data, n, pos, "true") {
     pos.val = pos.val + 4
-    PBool(true)
+    None
   } else if c == b'f' && matches_word(data, n, pos, "false") {
     pos.val = pos.val + 5
-    PBool(false)
+    None
   } else if c == b'n' && matches_word(data, n, pos, "null") {
     pos.val = pos.val + 4
-    PNull
+    None
   } else if c == b'-' || c == b'+' || c == b'.' || is_digit(c) {
     parse_number_or_ref(data, n, pos)
   } else {
-    parse_bare_name(data, n, pos)
+    Some(parse_bare_name(data, n, pos))
   }
 }
 
@@ -264,9 +261,7 @@ fn parse_dict(
   let kv : Array[(String, PdfValue)] = []
   pdf_skip_ws(data, n, pos)
   while pos.val < n {
-    if data[pos.val] == b'>' &&
-      pos.val + 1 < n &&
-      data[pos.val + 1] == b'>' {
+    if data[pos.val] == b'>' && pos.val + 1 < n && data[pos.val + 1] == b'>' {
       pos.val = pos.val + 2
       return PDict(kv)
     }
@@ -275,8 +270,10 @@ fn parse_dict(
       continue
     }
     let key = parse_name_string(data, n, pos)
-    let value = parse_value(data, n, pos)
-    kv.push((key, value))
+    match parse_value(data, n, pos) {
+      Some(value) => kv.push((key, value))
+      None => ()
+    }
     pdf_skip_ws(data, n, pos)
   }
   PDict(kv)
@@ -293,7 +290,10 @@ fn parse_array(
   let arr : Array[PdfValue] = []
   pdf_skip_ws(data, n, pos)
   while pos.val < n && data[pos.val] != b']' {
-    arr.push(parse_value(data, n, pos))
+    match parse_value(data, n, pos) {
+      Some(v) => arr.push(v)
+      None => ()
+    }
     pdf_skip_ws(data, n, pos)
   }
   if pos.val < n && data[pos.val] == b']' {
@@ -388,9 +388,9 @@ fn parse_lit_string(data : Array[Byte], n : Int, pos : Ref[Int]) -> PdfValue {
         let mut cnt = 1
         pos.val = pos.val + 1
         while cnt < 3 &&
-          pos.val < n &&
-          data[pos.val].to_int() >= '0'.to_int() &&
-          data[pos.val].to_int() <= '7'.to_int() {
+              pos.val < n &&
+              data[pos.val].to_int() >= '0'.to_int() &&
+              data[pos.val].to_int() <= '7'.to_int() {
           v = v * 8 + (data[pos.val].to_int() - '0'.to_int())
           pos.val = pos.val + 1
           cnt = cnt + 1
@@ -467,17 +467,21 @@ fn parse_bare_name(data : Array[Byte], n : Int, pos : Ref[Int]) -> PdfValue {
 
 ///|
 /// 数字或引用（N G R）：先尝试按引用解析，失败则按单个数字回退
-fn parse_number_or_ref(data : Array[Byte], n : Int, pos : Ref[Int]) -> PdfValue {
+fn parse_number_or_ref(
+  data : Array[Byte],
+  n : Int,
+  pos : Ref[Int],
+) -> PdfValue? {
   let save = pos.val
   match try_parse_int(data, n, pos) {
     Some(a) => {
       pdf_skip_ws(data, n, pos)
       match try_parse_int(data, n, pos) {
-        Some(b) => {
+        Some(_) => {
           pdf_skip_ws(data, n, pos)
           if pos.val < n && data[pos.val] == b'R' {
             pos.val = pos.val + 1
-            return PRef(a, b)
+            return Some(PRef(a))
           }
         }
         None => ()
@@ -487,7 +491,7 @@ fn parse_number_or_ref(data : Array[Byte], n : Int, pos : Ref[Int]) -> PdfValue 
   }
   pos.val = save
   parse_number_token(data, n, pos)
-  PNum
+  None
 }
 
 ///|
@@ -654,7 +658,7 @@ fn lookup(doc : PdfDoc, num : Int) -> PdfObject raise ReaderError {
 /// 解析间接引用（只跟随一层）
 fn resolve(doc : PdfDoc, v : PdfValue) -> PdfValue raise ReaderError {
   match v {
-    PRef(n, _) => lookup(doc, n).value
+    PRef(n) => lookup(doc, n).value
     _ => v
   }
 }
@@ -663,8 +667,8 @@ fn resolve(doc : PdfDoc, v : PdfValue) -> PdfValue raise ReaderError {
 /// 把值解析为间接对象（引用则取对象本身）
 fn resolve_obj(doc : PdfDoc, v : PdfValue) -> PdfObject raise ReaderError {
   match v {
-    PRef(n, _) => lookup(doc, n)
-    _ => { value: v, stream: None }
+    PRef(n) => lookup(doc, n)
+    _ => { value: v, stream: None, }
   }
 }
 
@@ -734,7 +738,7 @@ fn collect_pages(doc : PdfDoc, pages_num : Int) -> Array[Int] raise ReaderError 
     Some(PArr(kids)) =>
       for kid in kids {
         match kid {
-          PRef(n, _) => {
+          PRef(n) => {
             let k = lookup(doc, n)
             match k.value {
               PDict(kv) =>
@@ -765,15 +769,8 @@ fn collect_pages(doc : PdfDoc, pages_num : Int) -> Array[Int] raise ReaderError 
 /// 尝试按 zlib 解压，失败退回裸 DEFLATE，再失败返回原样
 fn inflate(raw : Bytes) -> Bytes {
   let fa = raw.to_fixedarray()
-  try {
-    Bytes::from_array(@fzip.unzlib_sync(fa))
-  } catch {
-    _ =>
-      try {
-        Bytes::from_array(@fzip.inflate_sync(fa))
-      } catch {
-        _ => raw
-      }
+  Bytes::from_array(@fzip.unzlib_sync(fa)) catch {
+    _ => Bytes::from_array(@fzip.inflate_sync(fa)) catch { _ => raw }
   }
 }
 
@@ -846,9 +843,9 @@ fn build_font(doc : PdfDoc, fv : PdfValue) -> PdfFont raise ReaderError {
       let is_cid = subtype == Some("Type0") ||
         encoding == Some("Identity-H") ||
         encoding == Some("Identity-V")
-      { simple: !is_cid, cid_map: cmap }
+      { simple: !is_cid, cid_map: cmap, }
     }
-    _ => { simple: true, cid_map: [] }
+    _ => { simple: true, cid_map: [], }
   }
 }
 
@@ -909,7 +906,7 @@ fn cmap_region(text : String, start : String, end : String) -> String {
   if ei < 0 {
     return ""
   }
-  text[si + start.length() : ei].to_owned()
+  text[si + start.length():ei].to_owned()
 }
 
 ///|
@@ -1005,7 +1002,10 @@ fn tokenize_content(content : Bytes) -> Array[PdfValue] raise ReaderError {
     if pos.val >= n {
       break
     }
-    out.push(parse_value(data, n, pos))
+    match parse_value(data, n, pos) {
+      Some(v) => out.push(v)
+      None => ()
+    }
   }
   out
 }
@@ -1023,9 +1023,9 @@ fn extract_text(
   let mut i = 0
   while i < n {
     match tokens[i] {
-      PName(op) => {
-        if op == "Tf" && i >= 2 {
-          match tokens[i - 2] {
+      PName(op) =>
+        if op == "Tf" && i >= 1 {
+          match tokens[i - 1] {
             PName(fname) => current_font = fname
             _ => ()
           }
@@ -1056,7 +1056,6 @@ fn extract_text(
             _ => ()
           }
         }
-      }
       _ => ()
     }
     i = i + 1
@@ -1072,16 +1071,13 @@ fn decode_with_font(
 ) -> String {
   let font = match find_font(fonts, name) {
     Some(f) => f
-    None => { simple: true, cid_map: [] }
+    None => { simple: true, cid_map: [], }
   }
   decode_run(font, s)
 }
 
 ///|
-fn find_font(
-  fonts : Array[(String, PdfFont)],
-  name : String,
-) -> PdfFont? {
+fn find_font(fonts : Array[(String, PdfFont)], name : String) -> PdfFont? {
   for kv in fonts {
     let (n, f) = kv
     if n == name {
