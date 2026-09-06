@@ -1,0 +1,49 @@
+// ============================================================
+// TXT
+// ============================================================
+
+/// 读取整个文本文件为字符串
+pub fn read_txt(file_path : String) -> String raise ReaderError {
+  try {
+    @fs.read_file_to_string(file_path)
+  } catch {
+    _ => raise ReaderError::Io("读取文件失败: " + file_path)
+  }
+}
+
+/// 按行读取文本文件，返回字符串数组（已去除行尾 \n / \r\n）
+pub fn read_txt_by_line(file_path : String) -> Array[String] raise ReaderError {
+  let content = read_txt(file_path)
+  let lines : Array[String] = []
+  for v in content.split("\n".view()) {
+    lines.push(v.trim_end(chars="\r".view()).to_owned())
+  }
+  // 文件以换行结尾时，去掉末尾产生的空字符串
+  if lines.length() > 0 && lines[lines.length() - 1] == "" {
+    let _ = lines.pop()
+  }
+  lines
+}
+
+/// 读取文本文件为字节序列
+pub fn read_txt_by_byte(file_path : String) -> Bytes raise ReaderError {
+  try {
+    @fs.read_file_to_bytes(file_path)
+  } catch {
+    _ => raise ReaderError::Io("读取文件失败: " + file_path)
+  }
+}
+
+/// 按块读取文本文件：每块 block_size 字节，转成字符串
+pub fn read_txt_by_block(file_path : String, block_size : Int) -> Array[String] raise ReaderError {
+  let content = read_txt(file_path)
+  let n = content.length()
+  let blocks : Array[String] = []
+  let mut i = 0
+  while i < n {
+    let end = if i + block_size < n { i + block_size } else { n }
+    blocks.push(content[i:end].to_owned())
+    i = end
+  }
+  blocks
+}

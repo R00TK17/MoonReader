@@ -1,0 +1,6 @@
+import {
+  "R00TK17/moonreader",
+  "moonbitlang/core/env",
+}
+
+pkgtype(kind: "executable")
