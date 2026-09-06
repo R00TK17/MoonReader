@@ -21,6 +21,10 @@ test "detect_format 按扩展名识别格式" {
     @moonreader.FileFormat::Xml,
   )
   assert_eq(
+    @moonreader.detect_format("data/a.md"),
+    @moonreader.FileFormat::Markdown,
+  )
+  assert_eq(
     @moonreader.detect_format("data/a.tar"),
     @moonreader.FileFormat::Tar,
   )
@@ -63,4 +67,30 @@ test "parse_xml 解析中文与实体" {
   assert_eq(root.name, "书名")
   assert_eq(root.attr("作者"), Some("张三"))
   assert_eq(root.text(), "A & B")
+}
+
+///|
+test "parse_markdown 解析块结构" {
+  let blocks = @moonreader.parse_markdown(
+    "# 标题\n\n- 项目一\n- 项目二\n\n```moonbit\nprintln(\"hi\")\n```",
+  )
+  assert_eq(blocks.length(), 4)
+  match blocks[0] {
+    @moonreader.MarkdownBlock::Heading(level, text) => {
+      assert_eq(level, 1)
+      assert_eq(text, "标题")
+    }
+    _ => abort("应为标题")
+  }
+  match blocks[1] {
+    @moonreader.MarkdownBlock::ListItem(item) => assert_eq(item, "项目一")
+    _ => abort("应为列表项")
+  }
+  match blocks[3] {
+    @moonreader.MarkdownBlock::CodeBlock(lang, code) => {
+      assert_eq(lang, "moonbit")
+      assert_eq(code, "println(\"hi\")")
+    }
+    _ => abort("应为代码块")
+  }
 }

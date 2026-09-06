@@ -15,6 +15,8 @@ pub enum Content {
   JsonRows(Array[Json])
   /// XML：根元素（元素树）
   XmlDoc(XmlElement)
+  /// Markdown：块结构列表
+  MarkdownBlocks(Array[MarkdownBlock])
   /// TAR：包内文件名列表
   TarFiles(Array[String])
 }
@@ -29,6 +31,7 @@ pub fn read(path : String) -> Content raise ReaderError {
     FileFormat::Json => Content::JsonValue(read_json_dynamic(path))
     FileFormat::Jsonl => Content::JsonRows(read_jsonl_by_line(path))
     FileFormat::Xml => Content::XmlDoc(read_xml(path))
+    FileFormat::Markdown => Content::MarkdownBlocks(read_markdown(path))
     FileFormat::Tar => Content::TarFiles(list_tar_filenames(path))
   }
 }

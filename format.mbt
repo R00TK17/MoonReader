@@ -10,6 +10,7 @@ pub(all) enum FileFormat {
   Json
   Jsonl
   Xml
+  Markdown
   Tar
 } derive(Eq, @debug.Debug)
 
@@ -26,6 +27,8 @@ pub fn detect_format(path : String) -> FileFormat {
     FileFormat::Json
   } else if p.has_suffix(".xml".view()) {
     FileFormat::Xml
+  } else if p.has_suffix(".md".view()) || p.has_suffix(".markdown".view()) {
+    FileFormat::Markdown
   } else if p.has_suffix(".tar".view()) {
     FileFormat::Tar
   } else {

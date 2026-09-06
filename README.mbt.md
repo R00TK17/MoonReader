@@ -1,6 +1,6 @@
 # MoonReader
 
-纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / TAR** 六种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
+纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / Markdown / TAR** 七种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
 
 ## 快速开始
 
@@ -13,6 +13,7 @@ match content {
   JsonValue(j) => ...
   JsonRows(js) => ...
   XmlDoc(root) => ...
+  MarkdownBlocks(blocks) => ...
   TarFiles(names) => ...
 }
 ```
@@ -21,7 +22,7 @@ match content {
 
 | 函数 | 说明 |
 |------|------|
-| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.xml`/`.tar`，不区分大小写，未知按 TXT） |
+| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.xml`/`.md`/`.tar`，不区分大小写，未知按 TXT） |
 | `read(path) -> Content` | 自动分派，返回统一结果 |
 
 `Content` 是一个带数据的枚举，按格式返回对应结构：
@@ -33,6 +34,7 @@ match content {
 | `JsonValue` | JSON | `Json`（动态值） |
 | `JsonRows` | JSONL | `Array[Json]`（每行一个对象） |
 | `XmlDoc` | XML | `XmlElement`（根元素树） |
+| `MarkdownBlocks` | Markdown | `Array[MarkdownBlock]`（块结构） |
 | `TarFiles` | TAR | `Array[String]`（包内文件名） |
 
 ## 各格式细粒度 API
@@ -57,6 +59,10 @@ read_jsonl_by_line(path)  // → Array[Json]
 // XML
 read_xml(path)            // → XmlElement（根元素树）
 parse_xml(text)           // 解析字符串 → XmlElement
+
+// Markdown
+read_markdown(path)       // → Array[MarkdownBlock]（标题/段落/代码/引用/列表/水平线）
+parse_markdown(text)      // 解析字符串 → Array[MarkdownBlock]
 
 // TAR
 read_tar_entries(path)           // 一次读盘，返回所有条目（TarEntry）

@@ -39,6 +39,12 @@ fn main {
             println("XML 解析成功:")
             println(root.to_string())
           }
+          MarkdownBlocks(blocks) => {
+            println("Markdown 块数: " + blocks.length().to_string())
+            for b in blocks {
+              println(b.to_string())
+            }
+          }
           TarFiles(names) =>
             // 正常流程已在上面单独处理 tar，这里仅兜底
             println("TAR 文件数: " + names.length().to_string())
@@ -83,6 +89,7 @@ fn print_usage() -> Unit {
   println("    .json  → 解析 JSON")
   println("    .jsonl → 按行解析 JSONL")
   println("    .xml   → 解析 XML")
+  println("    .md    → 解析 Markdown")
   println("    .tar   → 列出压缩包内文件名")
   println("    .tar <包内文件名> → 读取包内指定文件内容")
 }
