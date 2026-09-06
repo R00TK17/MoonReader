@@ -17,6 +17,8 @@ pub enum Content {
   XmlDoc(XmlElement)
   /// Markdown：块结构列表
   MarkdownBlocks(Array[MarkdownBlock])
+  /// ZIP：包内文件名列表
+  ZipFiles(Array[String])
   /// TAR：包内文件名列表
   TarFiles(Array[String])
 }
@@ -32,6 +34,7 @@ pub fn read(path : String) -> Content raise ReaderError {
     FileFormat::Jsonl => Content::JsonRows(read_jsonl_by_line(path))
     FileFormat::Xml => Content::XmlDoc(read_xml(path))
     FileFormat::Markdown => Content::MarkdownBlocks(read_markdown(path))
+    FileFormat::Zip => Content::ZipFiles(list_zip_filenames(path))
     FileFormat::Tar => Content::TarFiles(list_tar_filenames(path))
   }
 }

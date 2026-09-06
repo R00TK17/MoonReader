@@ -25,6 +25,10 @@ test "detect_format 按扩展名识别格式" {
     @moonreader.FileFormat::Markdown,
   )
   assert_eq(
+    @moonreader.detect_format("data/a.zip"),
+    @moonreader.FileFormat::Zip,
+  )
+  assert_eq(
     @moonreader.detect_format("data/a.tar"),
     @moonreader.FileFormat::Tar,
   )
@@ -93,4 +97,16 @@ test "parse_markdown 解析块结构" {
     }
     _ => abort("应为代码块")
   }
+}
+
+///|
+test "read_zip 列出并读取包内文件" {
+  let names = @moonreader.list_zip_filenames("testdata/sample.zip")
+  assert_eq(names.length(), 4)
+  assert_eq(names[0], "sample.jsonl")
+  assert_eq(names[1], "sample.md")
+  assert_eq(names[2], "sample.txt")
+  assert_eq(names[3], "sample.json")
+  let text = @moonreader.read_zip_text("testdata/sample.zip", "sample.txt")
+  assert_eq(text, "hello world\nmoonbit file reader\n第三行内容\n")
 }

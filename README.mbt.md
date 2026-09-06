@@ -1,6 +1,6 @@
 # MoonReader
 
-纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / Markdown / TAR** 七种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
+纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR** 八种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
 
 ## 快速开始
 
@@ -14,6 +14,7 @@ match content {
   JsonRows(js) => ...
   XmlDoc(root) => ...
   MarkdownBlocks(blocks) => ...
+  ZipFiles(names) => ...
   TarFiles(names) => ...
 }
 ```
@@ -22,7 +23,7 @@ match content {
 
 | 函数 | 说明 |
 |------|------|
-| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.xml`/`.md`/`.tar`，不区分大小写，未知按 TXT） |
+| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.xml`/`.md`/`.zip`/`.tar`，不区分大小写，未知按 TXT） |
 | `read(path) -> Content` | 自动分派，返回统一结果 |
 
 `Content` 是一个带数据的枚举，按格式返回对应结构：
@@ -35,6 +36,7 @@ match content {
 | `JsonRows` | JSONL | `Array[Json]`（每行一个对象） |
 | `XmlDoc` | XML | `XmlElement`（根元素树） |
 | `MarkdownBlocks` | Markdown | `Array[MarkdownBlock]`（块结构） |
+| `ZipFiles` | ZIP | `Array[String]`（包内文件名） |
 | `TarFiles` | TAR | `Array[String]`（包内文件名） |
 
 ## 各格式细粒度 API
@@ -63,6 +65,12 @@ parse_xml(text)           // 解析字符串 → XmlElement
 // Markdown
 read_markdown(path)       // → Array[MarkdownBlock]（标题/段落/代码/引用/列表/水平线）
 parse_markdown(text)      // 解析字符串 → Array[MarkdownBlock]
+
+// ZIP（解压基于 hustcer/fzip）
+read_zip_entries(path)           // 一次读盘，返回所有条目（ZipEntry）
+list_zip_filenames(path)         // 列出包内文件名
+read_zip_file(path, inner)       // 读包内文件原始字节
+read_zip_text(path, inner)       // 读包内文件并 UTF-8 解码
 
 // TAR
 read_tar_entries(path)           // 一次读盘，返回所有条目（TarEntry）
@@ -96,10 +104,12 @@ try {
 
 ```bash
 moon run cmd/main -- data/sample.csv
+moon run cmd/main -- data/sample.zip            # 列出并 dump 包内文件
+moon run cmd/main -- data/sample.zip sample.txt # 读取包内指定文件
 moon run cmd/main -- data/sample.tar            # 列出并 dump 包内文件
 moon run cmd/main -- data/sample.tar alpha.txt  # 读取包内指定文件
 ```
 
 ## 中文文件名
 
-库内部用 `_wfopen` + UTF-8 路径转换打开文件，外层路径和 tar 包内文件名均可为中文。
+库内部用 `_wfopen` + UTF-8 路径转换打开文件，外层路径和 zip/tar 包内文件名均可为中文。

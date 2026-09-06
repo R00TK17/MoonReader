@@ -9,6 +9,7 @@ fn main {
   let path = args[1]
   try {
     match @moonreader.detect_format(path) {
+      @moonreader.FileFormat::Zip => print_zip(path, args)
       @moonreader.FileFormat::Tar => print_tar(path, args)
       _ =>
         // 非 tar 格式统一走 read() 自动分派
@@ -45,6 +46,9 @@ fn main {
               println(b.to_string())
             }
           }
+          ZipFiles(names) =>
+            // 正常流程已在上面单独处理 zip，这里仅兜底
+            println("ZIP 文件数: " + names.length().to_string())
           TarFiles(names) =>
             // 正常流程已在上面单独处理 tar，这里仅兜底
             println("TAR 文件数: " + names.length().to_string())
@@ -52,6 +56,29 @@ fn main {
     }
   } catch {
     _ => println("读取失败: " + path)
+  }
+}
+
+///|
+/// 打印 zip 包内容：指定包内文件则读取其内容，否则列出并逐个 dump
+fn print_zip(
+  path : String,
+  args : Array[String],
+) -> Unit raise @moonreader.ReaderError {
+  if args.length() >= 3 {
+    let inner = args[2]
+    println(@moonreader.read_zip_text(path, inner))
+  } else {
+    // 一次读盘，内存里列出并 dump 全部条目
+    let entries = @moonreader.read_zip_entries(path)
+    println("ZIP 文件数: " + entries.length().to_string())
+    for e in entries {
+      println("  " + e.name)
+    }
+    for e in entries {
+      println("--- " + e.name + " ---")
+      println(e.text())
+    }
   }
 }
 
@@ -90,6 +117,8 @@ fn print_usage() -> Unit {
   println("    .jsonl → 按行解析 JSONL")
   println("    .xml   → 解析 XML")
   println("    .md    → 解析 Markdown")
+  println("    .zip   → 列出压缩包内文件名")
+  println("    .zip <包内文件名> → 读取包内指定文件内容")
   println("    .tar   → 列出压缩包内文件名")
   println("    .tar <包内文件名> → 读取包内指定文件内容")
 }

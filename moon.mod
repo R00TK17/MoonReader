@@ -24,3 +24,7 @@ keywords = [ ]
 preferred_target = "native"
 
 description = "MoonReader — 纯 MoonBit 实现的文件内容读取库（TXT / CSV / JSON / JSONL / TAR）"
+
+import {
+  "hustcer/fzip@0.8.6",
+}
