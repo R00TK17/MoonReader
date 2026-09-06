@@ -2,13 +2,9 @@
 // TXT
 // ============================================================
 
-/// 读取整个文本文件为字符串
+/// 读取整个文本文件为字符串（UTF-8 路径感知，支持中文文件名）
 pub fn read_txt(file_path : String) -> String raise ReaderError {
-  try {
-    @fs.read_file_to_string(file_path)
-  } catch {
-    _ => raise ReaderError::Io("读取文件失败: " + file_path)
-  }
+  @utf8.decode_lossy(read_file_to_bytes_utf8(file_path))
 }
 
 /// 按行读取文本文件，返回字符串数组（已去除行尾 \n / \r\n）
@@ -25,16 +21,12 @@ pub fn read_txt_by_line(file_path : String) -> Array[String] raise ReaderError {
   lines
 }
 
-/// 读取文本文件为字节序列
+/// 读取文本文件为字节序列（用 UTF-8 路径感知的读取，支持中文文件名）
 pub fn read_txt_by_byte(file_path : String) -> Bytes raise ReaderError {
-  try {
-    @fs.read_file_to_bytes(file_path)
-  } catch {
-    _ => raise ReaderError::Io("读取文件失败: " + file_path)
-  }
+  read_file_to_bytes_utf8(file_path)
 }
 
-/// 按块读取文本文件：每块 block_size 字节，转成字符串
+/// 按块读取文本文件：每块 block_size 个字符（注意是字符数，非字节数），转成字符串
 pub fn read_txt_by_block(file_path : String, block_size : Int) -> Array[String] raise ReaderError {
   let content = read_txt(file_path)
   let n = content.length()

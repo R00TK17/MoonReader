@@ -1,5 +1,9 @@
 import {
+  "moonbitlang/core/debug",
   "moonbitlang/core/encoding/utf8",
   "moonbitlang/core/json",
-  "moonbitlang/x/fs",
 }
+
+options(
+  "native-stub": [ "fs_utf8.c" ],
+)

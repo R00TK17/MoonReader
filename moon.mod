@@ -9,10 +9,6 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-import {
-  "moonbitlang/x@0.4.45",
-}
-
 name = "R00TK17/moonreader"
 
 version = "0.1.0"

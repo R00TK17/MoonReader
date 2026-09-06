@@ -10,11 +10,6 @@ fn parse_json(s : String) -> Json raise ReaderError {
   }
 }
 
-/// 读取 JSON 文件的原始文本
-pub fn read_json_text(file_path : String) -> String raise ReaderError {
-  read_txt(file_path)
-}
-
 /// 解析 JSON 文件为动态值（Json）
 pub fn read_json_dynamic(file_path : String) -> Json raise ReaderError {
   parse_json(read_txt(file_path))
