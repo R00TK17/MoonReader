@@ -108,14 +108,18 @@ fn print_txt(
 
 ///|
 /// 从参数列表读取可选编码名（下标 idx 处）；识别失败打印提示并返回 None
-fn opt_encoding(args : Array[String], idx : Int) -> Option[@moonreader.Encoding] {
+fn opt_encoding(args : Array[String], idx : Int) -> @moonreader.Encoding? {
   if args.length() <= idx {
     None
   } else {
     match @moonreader.parse_encoding(args[idx]) {
       Some(e) => Some(e)
       None => {
-        println("未知编码: " + args[idx] + "（支持 utf-8 / utf-16 / gbk / big5 / latin1）")
+        println(
+          "未知编码: " +
+          args[idx] +
+          "（支持 utf-8 / utf-16 / gbk / big5 / latin1）",
+        )
         None
       }
     }
@@ -174,14 +178,24 @@ fn print_tar(
 fn print_usage() -> Unit {
   println("MoonReader — MoonBit 文件读取演示")
   println("")
-  println("用法: moon run cmd/main -- <文件路径> [包内文件名] [编码]")
-  println("  根据扩展名自动识别格式；文本内容默认自动检测编码:")
+  println(
+    "用法: moon run cmd/main -- <文件路径> [包内文件名] [编码]",
+  )
+  println(
+    "  根据扩展名自动识别格式；文本内容默认自动检测编码:",
+  )
   println("    .txt               → 按行读取文本")
-  println("    .txt <编码>         → 按指定编码读取（如 gbk / big5 / utf-16）")
+  println(
+    "    .txt <编码>         → 按指定编码读取（如 gbk / big5 / utf-16）",
+  )
   println("    .csv / .json / .jsonl / .xml / .md → 对应格式解析")
   println("    .zip / .tar        → 列出压缩包内文件名")
-  println("    .zip <包内文件名> [编码] → 读取包内指定文件内容")
-  println("    .tar <包内文件名> [编码] → 读取包内指定文件内容")
+  println(
+    "    .zip <包内文件名> [编码] → 读取包内指定文件内容",
+  )
+  println(
+    "    .tar <包内文件名> [编码] → 读取包内指定文件内容",
+  )
   println("    .docx  → 读取 Word 文档文本")
   println("    .xlsx  → 读取 Excel 表格（行列）")
   println("    .pptx  → 读取 PPT 每页文本")

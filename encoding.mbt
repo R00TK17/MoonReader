@@ -37,10 +37,18 @@ pub fn detect_encoding(bytes : Bytes) -> Encoding {
   let n = arr.length()
 
   // 1. BOM 嗅探
-  if n >= 4 && arr[0] == b'\xFF' && arr[1] == b'\xFE' && arr[2] == b'\x00' && arr[3] == b'\x00' {
+  if n >= 4 &&
+    arr[0] == b'\xFF' &&
+    arr[1] == b'\xFE' &&
+    arr[2] == b'\x00' &&
+    arr[3] == b'\x00' {
     return Encoding::Utf32Le
   }
-  if n >= 4 && arr[0] == b'\x00' && arr[1] == b'\x00' && arr[2] == b'\xFE' && arr[3] == b'\xFF' {
+  if n >= 4 &&
+    arr[0] == b'\x00' &&
+    arr[1] == b'\x00' &&
+    arr[2] == b'\xFE' &&
+    arr[3] == b'\xFF' {
     return Encoding::Utf32Be
   }
   if n >= 2 && arr[0] == b'\xFF' && arr[1] == b'\xFE' {
@@ -91,8 +99,14 @@ pub fn detect_encoding(bytes : Bytes) -> Encoding {
 pub fn decode(bytes : Bytes, encoding : Encoding) -> String {
   match encoding {
     Encoding::Utf8 => @utf8.decode_lossy(strip_utf8_bom(bytes))
-    Encoding::Utf16Le => @utf16.decode_lossy(bytes, ignore_bom=true, endianness=@utf16.Endian::Little)
-    Encoding::Utf16Be => @utf16.decode_lossy(bytes, ignore_bom=true, endianness=@utf16.Endian::Big)
+    Encoding::Utf16Le =>
+      @utf16.decode_lossy(
+        bytes,
+        ignore_bom=true,
+        endianness=@utf16.Endian::Little,
+      )
+    Encoding::Utf16Be =>
+      @utf16.decode_lossy(bytes, ignore_bom=true, endianness=@utf16.Endian::Big)
     Encoding::Utf32Le => utf32_decode(bytes, false)
     Encoding::Utf32Be => utf32_decode(bytes, true)
     Encoding::Gbk => gbk_decode(bytes)
@@ -128,7 +142,11 @@ pub fn parse_encoding(name : String) -> Encoding? {
   let n = name.to_lower()
   if n == "utf-8" || n == "utf8" {
     Some(Encoding::Utf8)
-  } else if n == "utf-16le" || n == "utf16le" || n == "utf-16" || n == "utf16" || n == "unicode" {
+  } else if n == "utf-16le" ||
+    n == "utf16le" ||
+    n == "utf-16" ||
+    n == "utf16" ||
+    n == "unicode" {
     Some(Encoding::Utf16Le)
   } else if n == "utf-16be" || n == "utf16be" {
     Some(Encoding::Utf16Be)
@@ -149,6 +167,7 @@ pub fn parse_encoding(name : String) -> Encoding? {
 
 // ---------------- 检测辅助 ----------------
 
+///|
 /// 无 BOM 的 UTF-16 端序判定：返回 0=LE、1=BE、-1=不像 UTF-16
 fn utf16_endian(arr : Array[Byte]) -> Int {
   let n = arr.length()
@@ -178,6 +197,7 @@ fn utf16_endian(arr : Array[Byte]) -> Int {
   }
 }
 
+///|
 /// 无 BOM 的 UTF-32 端序判定：返回 0=LE、1=BE、-1=不像 UTF-32
 fn utf32_endian(arr : Array[Byte]) -> Int {
   let n = arr.length()
@@ -210,6 +230,7 @@ fn utf32_endian(arr : Array[Byte]) -> Int {
   }
 }
 
+///|
 /// 严格 UTF-8 校验：拒绝过长编码、代理区、非法前导字节
 fn is_valid_utf8(arr : Array[Byte]) -> Bool {
   let n = arr.length()
@@ -291,6 +312,7 @@ fn is_valid_utf8(arr : Array[Byte]) -> Bool {
   true
 }
 
+///|
 /// 统计双字节序列：(GBK 独有对, 合法 GBK/Big5 对, 孤立高位字节)
 fn classify_dbc(arr : Array[Byte]) -> (Int, Int, Int) {
   let n = arr.length()
@@ -325,16 +347,21 @@ fn classify_dbc(arr : Array[Byte]) -> (Int, Int, Int) {
 
 // ---------------- 解码辅助 ----------------
 
+///|
 /// 剥离 UTF-8 BOM（EF BB BF）
 fn strip_utf8_bom(bytes : Bytes) -> Bytes {
   let arr = bytes.to_array()
-  if arr.length() >= 3 && arr[0] == b'\xEF' && arr[1] == b'\xBB' && arr[2] == b'\xBF' {
+  if arr.length() >= 3 &&
+    arr[0] == b'\xEF' &&
+    arr[1] == b'\xBB' &&
+    arr[2] == b'\xBF' {
     Bytes::from_array(slice_bytes(arr, 3, arr.length()))
   } else {
     bytes
   }
 }
 
+///|
 /// UTF-32 解码（big=true 大端），剥离 BOM，代理区/越界替换为 U+FFFD
 fn utf32_decode(bytes : Bytes, big : Bool) -> String {
   let arr = bytes.to_array()
@@ -343,9 +370,15 @@ fn utf32_decode(bytes : Bytes, big : Bool) -> String {
   let mut i = 0
   if n >= 4 {
     let is_bom = if big {
-      arr[0] == b'\x00' && arr[1] == b'\x00' && arr[2] == b'\xFE' && arr[3] == b'\xFF'
+      arr[0] == b'\x00' &&
+      arr[1] == b'\x00' &&
+      arr[2] == b'\xFE' &&
+      arr[3] == b'\xFF'
     } else {
-      arr[0] == b'\xFF' && arr[1] == b'\xFE' && arr[2] == b'\x00' && arr[3] == b'\x00'
+      arr[0] == b'\xFF' &&
+      arr[1] == b'\xFE' &&
+      arr[2] == b'\x00' &&
+      arr[3] == b'\x00'
     }
     if is_bom {
       i = 4
@@ -354,14 +387,14 @@ fn utf32_decode(bytes : Bytes, big : Bool) -> String {
   while i + 3 < n {
     let cp = if big {
       (arr[i].to_int() << 24) |
-        (arr[i + 1].to_int() << 16) |
-        (arr[i + 2].to_int() << 8) |
-        arr[i + 3].to_int()
+      (arr[i + 1].to_int() << 16) |
+      (arr[i + 2].to_int() << 8) |
+      arr[i + 3].to_int()
     } else {
       arr[i].to_int() |
-        (arr[i + 1].to_int() << 8) |
-        (arr[i + 2].to_int() << 16) |
-        (arr[i + 3].to_int() << 24)
+      (arr[i + 1].to_int() << 8) |
+      (arr[i + 2].to_int() << 16) |
+      (arr[i + 3].to_int() << 24)
     }
     if cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF) {
       chars.push('\u{FFFD}')
@@ -373,6 +406,7 @@ fn utf32_decode(bytes : Bytes, big : Bool) -> String {
   String::from_array(chars)
 }
 
+///|
 /// Latin-1（ISO-8859-1）解码：字节直接映射到码点
 fn latin1_decode(bytes : Bytes) -> String {
   let arr = bytes.to_array()
@@ -383,6 +417,7 @@ fn latin1_decode(bytes : Bytes) -> String {
   String::from_array(chars)
 }
 
+///|
 /// GBK 解码：ASCII 直通，双字节查表，非法序列替换为 U+FFFD
 fn gbk_decode(bytes : Bytes) -> String {
   let arr = bytes.to_array()
@@ -418,6 +453,7 @@ fn gbk_decode(bytes : Bytes) -> String {
   String::from_array(chars)
 }
 
+///|
 /// Big5 解码：ASCII 直通，双字节查表，非法序列替换为 U+FFFD
 fn big5_decode(bytes : Bytes) -> String {
   let arr = bytes.to_array()
@@ -454,6 +490,7 @@ fn big5_decode(bytes : Bytes) -> String {
   String::from_array(chars)
 }
 
+///|
 /// GBK 码表查找：线性索引 → UInt16 小端读取
 fn gbk_lookup(lin : Int) -> Int {
   let off = lin * 2
@@ -462,6 +499,7 @@ fn gbk_lookup(lin : Int) -> Int {
   lo | (hi << 8)
 }
 
+///|
 /// Big5 码表查找：线性索引 → UInt16 小端读取
 fn big5_lookup(lin : Int) -> Int {
   let off = lin * 2

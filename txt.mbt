@@ -8,7 +8,7 @@
 /// 显式指定则按指定编码解码。
 pub fn read_txt(
   file_path : String,
-  encoding? : Option[Encoding] = None,
+  encoding? : Encoding? = None,
 ) -> String raise ReaderError {
   let bytes = read_file_to_bytes_utf8(file_path)
   match encoding {
@@ -22,9 +22,9 @@ pub fn read_txt(
 /// encoding 缺省自动检测，可显式指定。
 pub fn read_txt_by_line(
   file_path : String,
-  encoding? : Option[Encoding] = None,
+  encoding? : Encoding? = None,
 ) -> Array[String] raise ReaderError {
-  let content = read_txt(file_path, encoding=encoding)
+  let content = read_txt(file_path, encoding~)
   let lines : Array[String] = []
   for v in content.split("\n".view()) {
     lines.push(v.trim_end(chars="\r".view()).to_owned())
@@ -48,9 +48,9 @@ pub fn read_txt_by_byte(file_path : String) -> Bytes raise ReaderError {
 pub fn read_txt_by_block(
   file_path : String,
   block_size : Int,
-  encoding? : Option[Encoding] = None,
+  encoding? : Encoding? = None,
 ) -> Array[String] raise ReaderError {
-  let content = read_txt(file_path, encoding=encoding)
+  let content = read_txt(file_path, encoding~)
   let n = content.length()
   let blocks : Array[String] = []
   let mut i = 0

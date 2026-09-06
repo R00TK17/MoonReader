@@ -6,8 +6,9 @@
 /// 按行读取 CSV，返回「行 → 字段」的二维数组
 pub fn read_csv_by_line(
   file_path : String,
+  encoding? : Encoding? = None,
 ) -> Array[Array[String]] raise ReaderError {
-  let content = read_txt(file_path)
+  let content = read_txt(file_path, encoding~)
   let chars = content.iter().to_array()
   let n = chars.length()
   let records : Array[Array[String]] = []
@@ -57,8 +58,9 @@ pub fn read_csv_by_line(
 /// 按列读取 CSV：返回「列 → 值」的二维数组（转置）
 pub fn read_csv_by_column(
   file_path : String,
+  encoding? : Encoding? = None,
 ) -> Array[Array[String]] raise ReaderError {
-  let rows = read_csv_by_line(file_path)
+  let rows = read_csv_by_line(file_path, encoding~)
   if rows.length() == 0 {
     return []
   }
@@ -85,8 +87,9 @@ pub fn read_csv_by_column(
 pub fn read_csv_by_block(
   file_path : String,
   block_size : Int,
+  encoding? : Encoding? = None,
 ) -> Array[Array[Array[String]]] raise ReaderError {
-  let rows = read_csv_by_line(file_path)
+  let rows = read_csv_by_line(file_path, encoding~)
   let blocks : Array[Array[Array[String]]] = []
   let mut cur : Array[Array[String]] = []
   for row in rows {

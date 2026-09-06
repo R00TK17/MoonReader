@@ -11,8 +11,11 @@ fn parse_json(s : String) -> Json raise ReaderError {
 
 ///|
 /// 解析 JSON 文件为动态值（Json）
-pub fn read_json_dynamic(file_path : String) -> Json raise ReaderError {
-  parse_json(read_txt(file_path))
+pub fn read_json_dynamic(
+  file_path : String,
+  encoding? : Encoding? = None,
+) -> Json raise ReaderError {
+  parse_json(read_txt(file_path, encoding~))
 }
 
 ///|
@@ -20,8 +23,9 @@ pub fn read_json_dynamic(file_path : String) -> Json raise ReaderError {
 pub fn read_json_by_block(
   file_path : String,
   block_size : Int,
+  encoding? : Encoding? = None,
 ) -> Array[Array[Json]] raise ReaderError {
-  let root = read_json_dynamic(file_path)
+  let root = read_json_dynamic(file_path, encoding~)
   let arr = match root {
     Array(a) => a
     _ => raise ReaderError::Parse("JSON 顶层不是数组")
@@ -43,8 +47,11 @@ pub fn read_json_by_block(
 
 ///|
 /// 按行读取 JSONL（每行一个 JSON 对象）
-pub fn read_jsonl_by_line(file_path : String) -> Array[Json] raise ReaderError {
-  let content = read_txt(file_path)
+pub fn read_jsonl_by_line(
+  file_path : String,
+  encoding? : Encoding? = None,
+) -> Array[Json] raise ReaderError {
+  let content = read_txt(file_path, encoding~)
   let result : Array[Json] = []
   for v in content.split("\n".view()) {
     let line = v.trim_end(chars="\r".view()).to_owned()

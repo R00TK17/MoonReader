@@ -23,8 +23,11 @@ pub(all) struct XmlElement {
 
 ///|
 /// 读取并解析 XML 文件，返回根元素
-pub fn read_xml(file_path : String) -> XmlElement raise ReaderError {
-  parse_xml(read_txt(file_path))
+pub fn read_xml(
+  file_path : String,
+  encoding? : Encoding? = None,
+) -> XmlElement raise ReaderError {
+  parse_xml(read_txt(file_path, encoding~))
 }
 
 ///|

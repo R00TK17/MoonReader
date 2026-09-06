@@ -37,10 +37,7 @@ pub(all) struct TarEntry {
 ///|
 /// 把条目内容自动检测编码并解码为字符串（非法字节用 U+FFFD 替换）。
 /// encoding 可显式指定解码方式。
-pub fn TarEntry::text(
-  self : TarEntry,
-  encoding? : Option[Encoding] = None,
-) -> String {
+pub fn TarEntry::text(self : TarEntry, encoding? : Encoding? = None) -> String {
   match encoding {
     Some(e) => decode(self.content, e)
     None => decode_auto(self.content)
@@ -112,7 +109,7 @@ pub fn read_tar_file(
 pub fn read_tar_text(
   file_path : String,
   inner_name : String,
-  encoding? : Option[Encoding] = None,
+  encoding? : Encoding? = None,
 ) -> String raise ReaderError {
   let bytes = read_tar_file(file_path, inner_name)
   match encoding {

@@ -275,8 +275,14 @@ test "read_txt 显式指定 GBK 解码与自动检测一致" {
 ///|
 test "parse_encoding 解析编码名称" {
   assert_eq(@moonreader.parse_encoding("GBK"), Some(@moonreader.Encoding::Gbk))
-  assert_eq(@moonreader.parse_encoding("big5"), Some(@moonreader.Encoding::Big5))
-  assert_eq(@moonreader.parse_encoding("utf-8"), Some(@moonreader.Encoding::Utf8))
+  assert_eq(
+    @moonreader.parse_encoding("big5"),
+    Some(@moonreader.Encoding::Big5),
+  )
+  assert_eq(
+    @moonreader.parse_encoding("utf-8"),
+    Some(@moonreader.Encoding::Utf8),
+  )
   assert_eq(
     @moonreader.parse_encoding("utf-16"),
     Some(@moonreader.Encoding::Utf16Le),
@@ -298,4 +304,44 @@ test "read_zip_text 自动检测 GBK 内层文件" {
     @moonreader.read_zip_text("testdata/gbk_inner.zip", "gbk.txt"),
     "中文编码",
   )
+}
+
+///|
+test "read_csv_by_line 自动检测 GBK 编码" {
+  let rows = @moonreader.read_csv_by_line("testdata/encoding_gbk.csv")
+  assert_eq(rows.length(), 3)
+  assert_eq(rows[0][0], "姓名")
+  assert_eq(rows[0][1], "城市")
+  assert_eq(rows[1][0], "张三")
+  assert_eq(rows[1][1], "北京")
+  assert_eq(rows[2][0], "李四")
+  assert_eq(rows[2][1], "上海")
+}
+
+///|
+test "read_xml 自动检测 GBK 编码" {
+  let root = @moonreader.read_xml("testdata/encoding_gbk.xml")
+  assert_eq(root.name, "书名")
+  assert_eq(root.attr("作者"), Some("张三"))
+  assert_eq(root.text(), "内容")
+}
+
+///|
+test "read_json_dynamic 自动检测 GBK 编码" {
+  assert_eq(
+    @moonreader.read_json_dynamic("testdata/encoding_gbk.json").stringify(),
+    "{\"姓名\":\"张三\"}",
+  )
+}
+
+///|
+test "read_csv_by_line 显式指定 GBK 解码" {
+  let rows = @moonreader.read_csv_by_line(
+    "testdata/encoding_gbk.csv",
+    encoding=Some(@moonreader.Encoding::Gbk),
+  )
+  assert_eq(rows.length(), 3)
+  assert_eq(rows[0][0], "姓名")
+  assert_eq(rows[1][0], "张三")
+  assert_eq(rows[2][0], "李四")
 }

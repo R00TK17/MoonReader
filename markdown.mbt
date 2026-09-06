@@ -26,8 +26,9 @@ pub(all) enum MarkdownBlock {
 /// 读取并解析 Markdown 文件为块结构
 pub fn read_markdown(
   file_path : String,
+  encoding? : Encoding? = None,
 ) -> Array[MarkdownBlock] raise ReaderError {
-  parse_markdown(read_txt(file_path))
+  parse_markdown(read_txt(file_path, encoding~))
 }
 
 ///|
