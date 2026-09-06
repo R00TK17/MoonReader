@@ -35,9 +35,16 @@ pub(all) struct TarEntry {
 }
 
 ///|
-/// 把条目内容按 UTF-8 解码为字符串（非法字节用 U+FFFD 替换）
-pub fn TarEntry::text(self : TarEntry) -> String {
-  @utf8.decode_lossy(self.content)
+/// 把条目内容自动检测编码并解码为字符串（非法字节用 U+FFFD 替换）。
+/// encoding 可显式指定解码方式。
+pub fn TarEntry::text(
+  self : TarEntry,
+  encoding? : Option[Encoding] = None,
+) -> String {
+  match encoding {
+    Some(e) => decode(self.content, e)
+    None => decode_auto(self.content)
+  }
 }
 
 ///|
@@ -100,10 +107,16 @@ pub fn read_tar_file(
 }
 
 ///|
-/// 读取 tar 包内某个文件的内容，按 UTF-8 解码为字符串
+/// 读取 tar 包内某个文件的内容，自动检测编码并解码为字符串。
+/// encoding 可显式指定解码方式。
 pub fn read_tar_text(
   file_path : String,
   inner_name : String,
+  encoding? : Option[Encoding] = None,
 ) -> String raise ReaderError {
-  @utf8.decode_lossy(read_tar_file(file_path, inner_name))
+  let bytes = read_tar_file(file_path, inner_name)
+  match encoding {
+    Some(e) => decode(bytes, e)
+    None => decode_auto(bytes)
+  }
 }

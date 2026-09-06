@@ -7,12 +7,14 @@ fn main {
     return
   }
   let path = args[1]
+  let fmt = @moonreader.detect_format(path)
   try {
-    match @moonreader.detect_format(path) {
+    match fmt {
       @moonreader.FileFormat::Zip => print_zip(path, args)
       @moonreader.FileFormat::Tar => print_tar(path, args)
+      @moonreader.FileFormat::Txt => print_txt(path, args)
       _ =>
-        // 非 tar 格式统一走 read() 自动分派
+        // 其余格式统一走 read() 自动分派
         match @moonreader.read(path) {
           Lines(lines) => {
             println("TXT 行数: " + lines.length().to_string())
@@ -91,6 +93,36 @@ fn main {
 }
 
 ///|
+/// 读取文本文件并逐行打印；可选第 2 个参数显式指定编码（如 gbk / big5）
+fn print_txt(
+  path : String,
+  args : Array[String],
+) -> Unit raise @moonreader.ReaderError {
+  let enc = opt_encoding(args, 2)
+  let lines = @moonreader.read_txt_by_line(path, encoding=enc)
+  println("TXT 行数: " + lines.length().to_string())
+  for line in lines {
+    println(line)
+  }
+}
+
+///|
+/// 从参数列表读取可选编码名（下标 idx 处）；识别失败打印提示并返回 None
+fn opt_encoding(args : Array[String], idx : Int) -> Option[@moonreader.Encoding] {
+  if args.length() <= idx {
+    None
+  } else {
+    match @moonreader.parse_encoding(args[idx]) {
+      Some(e) => Some(e)
+      None => {
+        println("未知编码: " + args[idx] + "（支持 utf-8 / utf-16 / gbk / big5 / latin1）")
+        None
+      }
+    }
+  }
+}
+
+///|
 /// 打印 zip 包内容：指定包内文件则读取其内容，否则列出并逐个 dump
 fn print_zip(
   path : String,
@@ -98,7 +130,8 @@ fn print_zip(
 ) -> Unit raise @moonreader.ReaderError {
   if args.length() >= 3 {
     let inner = args[2]
-    println(@moonreader.read_zip_text(path, inner))
+    let enc = opt_encoding(args, 3)
+    println(@moonreader.read_zip_text(path, inner, encoding=enc))
   } else {
     // 一次读盘，内存里列出并 dump 全部条目
     let entries = @moonreader.read_zip_entries(path)
@@ -121,7 +154,8 @@ fn print_tar(
 ) -> Unit raise @moonreader.ReaderError {
   if args.length() >= 3 {
     let inner = args[2]
-    println(@moonreader.read_tar_text(path, inner))
+    let enc = opt_encoding(args, 3)
+    println(@moonreader.read_tar_text(path, inner, encoding=enc))
   } else {
     // 一次读盘，内存里列出并 dump 全部条目
     let entries = @moonreader.read_tar_entries(path)
@@ -140,18 +174,14 @@ fn print_tar(
 fn print_usage() -> Unit {
   println("MoonReader — MoonBit 文件读取演示")
   println("")
-  println("用法: moon run cmd/main -- <文件路径> [包内文件名]")
-  println("  根据扩展名自动识别格式:")
-  println("    .txt   → 按行读取文本")
-  println("    .csv   → 按行读取 CSV")
-  println("    .json  → 解析 JSON")
-  println("    .jsonl → 按行解析 JSONL")
-  println("    .xml   → 解析 XML")
-  println("    .md    → 解析 Markdown")
-  println("    .zip   → 列出压缩包内文件名")
-  println("    .zip <包内文件名> → 读取包内指定文件内容")
-  println("    .tar   → 列出压缩包内文件名")
-  println("    .tar <包内文件名> → 读取包内指定文件内容")
+  println("用法: moon run cmd/main -- <文件路径> [包内文件名] [编码]")
+  println("  根据扩展名自动识别格式；文本内容默认自动检测编码:")
+  println("    .txt               → 按行读取文本")
+  println("    .txt <编码>         → 按指定编码读取（如 gbk / big5 / utf-16）")
+  println("    .csv / .json / .jsonl / .xml / .md → 对应格式解析")
+  println("    .zip / .tar        → 列出压缩包内文件名")
+  println("    .zip <包内文件名> [编码] → 读取包内指定文件内容")
+  println("    .tar <包内文件名> [编码] → 读取包内指定文件内容")
   println("    .docx  → 读取 Word 文档文本")
   println("    .xlsx  → 读取 Excel 表格（行列）")
   println("    .pptx  → 读取 PPT 每页文本")

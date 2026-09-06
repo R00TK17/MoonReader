@@ -193,3 +193,109 @@ test "read_pdf_text 读取 PDF 每页文本" {
     "第一页\npdf\n第二页\npdf\n第三页\npdf",
   )
 }
+
+///|
+test "detect_encoding 识别常见编码" {
+  let gbk = Bytes::from_array([
+    b'\xD6', b'\xD0', b'\xCE', b'\xC4', b'\xB1', b'\xE0', b'\xC2', b'\xEB',
+  ])
+  let utf8 = Bytes::from_array([
+    b'\xE4', b'\xB8', b'\xAD', b'\xE6', b'\x96', b'\x87',
+  ])
+  let utf16le = Bytes::from_array([
+    b'\xFF', b'\xFE', b'\x2D', b'\x4E', b'\x87', b'\x65',
+  ])
+  let utf16be = Bytes::from_array([
+    b'\xFE', b'\xFF', b'\x4E', b'\x2D', b'\x65', b'\x87',
+  ])
+  assert_eq(@moonreader.detect_encoding(gbk), @moonreader.Encoding::Gbk)
+  assert_eq(@moonreader.detect_encoding(utf8), @moonreader.Encoding::Utf8)
+  assert_eq(@moonreader.detect_encoding(utf16le), @moonreader.Encoding::Utf16Le)
+  assert_eq(@moonreader.detect_encoding(utf16be), @moonreader.Encoding::Utf16Be)
+}
+
+///|
+test "decode_auto 解码 GBK 与 UTF-8 中文" {
+  let gbk = Bytes::from_array([
+    b'\xD6', b'\xD0', b'\xCE', b'\xC4', b'\xB1', b'\xE0', b'\xC2', b'\xEB',
+  ])
+  assert_eq(@moonreader.decode_auto(gbk), "中文编码")
+  let utf8 = Bytes::from_array([
+    b'\xE4', b'\xB8', b'\xAD', b'\xE6', b'\x96', b'\x87',
+  ])
+  assert_eq(@moonreader.decode_auto(utf8), "中文")
+}
+
+///|
+test "decode_auto 解码 UTF-16LE 带 BOM" {
+  let utf16le = Bytes::from_array([
+    b'\xFF', b'\xFE', b'\x2D', b'\x4E', b'\x87', b'\x65',
+  ])
+  assert_eq(@moonreader.decode_auto(utf16le), "中文")
+}
+
+///|
+test "decode_big5 显式解码繁体中文" {
+  let big5 = Bytes::from_array([
+    b'\xC1', b'\x63', b'\xC5', b'\xE9', b'\xA4', b'\xA4', b'\xA4', b'\xE5',
+  ])
+  assert_eq(@moonreader.decode_big5(big5), "繁體中文")
+}
+
+///|
+test "read_txt 自动检测并解码 GBK 编码文件" {
+  assert_eq(
+    @moonreader.read_txt("testdata/encoding_gbk.txt"),
+    "中文编码\n明月几时有",
+  )
+}
+
+///|
+test "read_txt 显式指定编码解码 Big5 文件" {
+  assert_eq(
+    @moonreader.read_txt(
+      "testdata/encoding_big5.txt",
+      encoding=Some(@moonreader.Encoding::Big5),
+    ),
+    "繁體中文",
+  )
+}
+
+///|
+test "read_txt 显式指定 GBK 解码与自动检测一致" {
+  assert_eq(
+    @moonreader.read_txt(
+      "testdata/encoding_gbk.txt",
+      encoding=Some(@moonreader.Encoding::Gbk),
+    ),
+    "中文编码\n明月几时有",
+  )
+}
+
+///|
+test "parse_encoding 解析编码名称" {
+  assert_eq(@moonreader.parse_encoding("GBK"), Some(@moonreader.Encoding::Gbk))
+  assert_eq(@moonreader.parse_encoding("big5"), Some(@moonreader.Encoding::Big5))
+  assert_eq(@moonreader.parse_encoding("utf-8"), Some(@moonreader.Encoding::Utf8))
+  assert_eq(
+    @moonreader.parse_encoding("utf-16"),
+    Some(@moonreader.Encoding::Utf16Le),
+  )
+  assert_eq(@moonreader.parse_encoding("no-such-enc"), None)
+}
+
+///|
+test "read_tar_text 自动检测 GBK 内层文件" {
+  assert_eq(
+    @moonreader.read_tar_text("testdata/gbk_inner.tar", "gbk.txt"),
+    "中文编码",
+  )
+}
+
+///|
+test "read_zip_text 自动检测 GBK 内层文件" {
+  assert_eq(
+    @moonreader.read_zip_text("testdata/gbk_inner.zip", "gbk.txt"),
+    "中文编码",
+  )
+}

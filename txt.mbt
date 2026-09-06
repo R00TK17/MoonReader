@@ -3,15 +3,28 @@
 // ============================================================
 
 ///|
-/// 读取整个文本文件为字符串（UTF-8 路径感知，支持中文文件名）
-pub fn read_txt(file_path : String) -> String raise ReaderError {
-  @utf8.decode_lossy(read_file_to_bytes_utf8(file_path))
+/// 读取整个文本文件为字符串（UTF-8 路径感知，支持中文文件名）。
+/// encoding 缺省自动检测（BOM / UTF-8 / UTF-16 / GBK / Big5 / Latin-1）；
+/// 显式指定则按指定编码解码。
+pub fn read_txt(
+  file_path : String,
+  encoding? : Option[Encoding] = None,
+) -> String raise ReaderError {
+  let bytes = read_file_to_bytes_utf8(file_path)
+  match encoding {
+    Some(e) => decode(bytes, e)
+    None => decode_auto(bytes)
+  }
 }
 
 ///|
-/// 按行读取文本文件，返回字符串数组（已去除行尾 \n / \r\n）
-pub fn read_txt_by_line(file_path : String) -> Array[String] raise ReaderError {
-  let content = read_txt(file_path)
+/// 按行读取文本文件，返回字符串数组（已去除行尾 \n / \r\n）。
+/// encoding 缺省自动检测，可显式指定。
+pub fn read_txt_by_line(
+  file_path : String,
+  encoding? : Option[Encoding] = None,
+) -> Array[String] raise ReaderError {
+  let content = read_txt(file_path, encoding=encoding)
   let lines : Array[String] = []
   for v in content.split("\n".view()) {
     lines.push(v.trim_end(chars="\r".view()).to_owned())
@@ -30,12 +43,14 @@ pub fn read_txt_by_byte(file_path : String) -> Bytes raise ReaderError {
 }
 
 ///|
-/// 按块读取文本文件：每块 block_size 个字符（注意是字符数，非字节数），转成字符串
+/// 按块读取文本文件：每块 block_size 个字符（注意是字符数，非字节数），转成字符串。
+/// encoding 缺省自动检测，可显式指定。
 pub fn read_txt_by_block(
   file_path : String,
   block_size : Int,
+  encoding? : Option[Encoding] = None,
 ) -> Array[String] raise ReaderError {
-  let content = read_txt(file_path)
+  let content = read_txt(file_path, encoding=encoding)
   let n = content.length()
   let blocks : Array[String] = []
   let mut i = 0
