@@ -48,6 +48,10 @@ test "detect_format 按扩展名识别格式" {
     @moonreader.detect_format("data/a.pptx"),
     @moonreader.FileFormat::Pptx,
   )
+  assert_eq(
+    @moonreader.detect_format("data/a.pdf"),
+    @moonreader.FileFormat::Pdf,
+  )
 }
 
 ///|
@@ -174,5 +178,18 @@ test "read_pptx_text 读取 PPT 每页文本" {
   assert_eq(
     @moonreader.read_pptx_text("testdata/sample.pptx"),
     "何庄\n秋雨\n何庄1213asdf",
+  )
+}
+
+///|
+test "read_pdf_text 读取 PDF 每页文本" {
+  let pages = @moonreader.read_pdf_text_by_page("testdata/sample.pdf")
+  assert_eq(pages.length(), 3)
+  assert_eq(pages[0], "第一页\npdf")
+  assert_eq(pages[1], "第二页\npdf")
+  assert_eq(pages[2], "第三页\npdf")
+  assert_eq(
+    @moonreader.read_pdf_text("testdata/sample.pdf"),
+    "第一页\npdf\n第二页\npdf\n第三页\npdf",
   )
 }

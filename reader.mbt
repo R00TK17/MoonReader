@@ -27,6 +27,8 @@ pub enum Content {
   ExcelSheets(Array[ExcelSheet])
   /// PPTX：每页文本
   PptxSlides(Array[String])
+  /// PDF：每页文本
+  PdfPages(Array[String])
 }
 
 ///|
@@ -45,5 +47,6 @@ pub fn read(path : String) -> Content raise ReaderError {
     FileFormat::Docx => Content::DocxText(read_docx_text(path))
     FileFormat::Xlsx => Content::ExcelSheets(read_excel_sheets(path))
     FileFormat::Pptx => Content::PptxSlides(read_pptx_text_by_slide(path))
+    FileFormat::Pdf => Content::PdfPages(read_pdf_text_by_page(path))
   }
 }

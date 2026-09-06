@@ -68,6 +68,15 @@ fn main {
               i = i + 1
             }
           }
+          PdfPages(pages) => {
+            println("PDF 页数: " + pages.length().to_string())
+            let mut i = 1
+            for p in pages {
+              println("--- 第 " + i.to_string() + " 页 ---")
+              println(p)
+              i = i + 1
+            }
+          }
           ZipFiles(names) =>
             // 正常流程已在上面单独处理 zip，这里仅兜底
             println("ZIP 文件数: " + names.length().to_string())
@@ -146,4 +155,5 @@ fn print_usage() -> Unit {
   println("    .docx  → 读取 Word 文档文本")
   println("    .xlsx  → 读取 Excel 表格（行列）")
   println("    .pptx  → 读取 PPT 每页文本")
+  println("    .pdf   → 读取 PDF 每页文本")
 }

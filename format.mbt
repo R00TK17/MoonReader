@@ -16,6 +16,7 @@ pub(all) enum FileFormat {
   Docx
   Xlsx
   Pptx
+  Pdf
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -43,6 +44,8 @@ pub fn detect_format(path : String) -> FileFormat {
     FileFormat::Xlsx
   } else if p.has_suffix(".pptx".view()) {
     FileFormat::Pptx
+  } else if p.has_suffix(".pdf".view()) {
+    FileFormat::Pdf
   } else {
     FileFormat::Txt
   }
