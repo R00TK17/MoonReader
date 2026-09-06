@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 这是一个示例 XML -->
+<library name="示例书库" version="1.0">
+  <book id="1" lang="zh">
+    <title>MoonBit 入门 &amp; 实战</title>
+    <author>张三</author>
+    <price currency="CNY">39.9</price>
+  </book>
+  <book id="2">
+    <title>文件读取库</title>
+    <author>李四</author>
+    <description><![CDATA[包含 <特殊> 字符 & 内容]]></description>
+    <price>0.0</price>
+  </book>
+  <empty />
+</library>

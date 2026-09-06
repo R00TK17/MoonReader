@@ -1,3 +1,4 @@
+///|
 fn main {
   let args = @env.args()
   // args[0] 是程序名，args[1] 起才是传入的参数
@@ -34,10 +35,13 @@ fn main {
               println(j.stringify())
             }
           }
-          TarFiles(names) => {
+          XmlDoc(root) => {
+            println("XML 解析成功:")
+            println(root.to_string())
+          }
+          TarFiles(names) =>
             // 正常流程已在上面单独处理 tar，这里仅兜底
             println("TAR 文件数: " + names.length().to_string())
-          }
         }
     }
   } catch {
@@ -45,8 +49,12 @@ fn main {
   }
 }
 
+///|
 /// 打印 tar 包内容：指定包内文件则读取其内容，否则列出并逐个 dump
-fn print_tar(path : String, args : Array[String]) -> Unit raise @moonreader.ReaderError {
+fn print_tar(
+  path : String,
+  args : Array[String],
+) -> Unit raise @moonreader.ReaderError {
   if args.length() >= 3 {
     let inner = args[2]
     println(@moonreader.read_tar_text(path, inner))
@@ -64,6 +72,7 @@ fn print_tar(path : String, args : Array[String]) -> Unit raise @moonreader.Read
   }
 }
 
+///|
 fn print_usage() -> Unit {
   println("MoonReader — MoonBit 文件读取演示")
   println("")
@@ -73,6 +82,7 @@ fn print_usage() -> Unit {
   println("    .csv   → 按行读取 CSV")
   println("    .json  → 解析 JSON")
   println("    .jsonl → 按行解析 JSONL")
+  println("    .xml   → 解析 XML")
   println("    .tar   → 列出压缩包内文件名")
   println("    .tar <包内文件名> → 读取包内指定文件内容")
 }

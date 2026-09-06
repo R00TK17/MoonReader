@@ -2,21 +2,25 @@
 // JSON / JSONL
 // ============================================================
 
+///|
 fn parse_json(s : String) -> Json raise ReaderError {
-  try {
-    @json.parse(s.view())
-  } catch {
+  @json.parse(s.view()) catch {
     e => raise ReaderError::Parse(e.to_string())
   }
 }
 
+///|
 /// 解析 JSON 文件为动态值（Json）
 pub fn read_json_dynamic(file_path : String) -> Json raise ReaderError {
   parse_json(read_txt(file_path))
 }
 
+///|
 /// 按块读取 JSON：假设顶层是数组，每 block_size 个元素一个块
-pub fn read_json_by_block(file_path : String, block_size : Int) -> Array[Array[Json]] raise ReaderError {
+pub fn read_json_by_block(
+  file_path : String,
+  block_size : Int,
+) -> Array[Array[Json]] raise ReaderError {
   let root = read_json_dynamic(file_path)
   let arr = match root {
     Array(a) => a
@@ -37,6 +41,7 @@ pub fn read_json_by_block(file_path : String, block_size : Int) -> Array[Array[J
   blocks
 }
 
+///|
 /// 按行读取 JSONL（每行一个 JSON 对象）
 pub fn read_jsonl_by_line(file_path : String) -> Array[Json] raise ReaderError {
   let content = read_txt(file_path)

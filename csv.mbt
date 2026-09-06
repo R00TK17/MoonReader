@@ -2,8 +2,11 @@
 // CSV
 // ============================================================
 
+///|
 /// 按行读取 CSV，返回「行 → 字段」的二维数组
-pub fn read_csv_by_line(file_path : String) -> Array[Array[String]] raise ReaderError {
+pub fn read_csv_by_line(
+  file_path : String,
+) -> Array[Array[String]] raise ReaderError {
   let content = read_txt(file_path)
   let chars = content.iter().to_array()
   let n = chars.length()
@@ -50,8 +53,11 @@ pub fn read_csv_by_line(file_path : String) -> Array[Array[String]] raise Reader
   records
 }
 
+///|
 /// 按列读取 CSV：返回「列 → 值」的二维数组（转置）
-pub fn read_csv_by_column(file_path : String) -> Array[Array[String]] raise ReaderError {
+pub fn read_csv_by_column(
+  file_path : String,
+) -> Array[Array[String]] raise ReaderError {
   let rows = read_csv_by_line(file_path)
   if rows.length() == 0 {
     return []
@@ -74,8 +80,12 @@ pub fn read_csv_by_column(file_path : String) -> Array[Array[String]] raise Read
   cols
 }
 
+///|
 /// 按块读取 CSV：每 block_size 行一个块
-pub fn read_csv_by_block(file_path : String, block_size : Int) -> Array[Array[Array[String]]] raise ReaderError {
+pub fn read_csv_by_block(
+  file_path : String,
+  block_size : Int,
+) -> Array[Array[Array[String]]] raise ReaderError {
   let rows = read_csv_by_line(file_path)
   let blocks : Array[Array[Array[String]]] = []
   let mut cur : Array[Array[String]] = []

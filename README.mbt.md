@@ -1,10 +1,10 @@
 # MoonReader
 
-纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / TAR** 五种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
+纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / TAR** 六种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
 
 ## 快速开始
 
-```moonbit
+```moonbit nocheck
 // 一键读取：按扩展名自动识别格式
 let content = @moonreader.read("data/sample.csv")
 match content {
@@ -12,6 +12,7 @@ match content {
   Lines(lines) => ...
   JsonValue(j) => ...
   JsonRows(js) => ...
+  XmlDoc(root) => ...
   TarFiles(names) => ...
 }
 ```
@@ -20,7 +21,7 @@ match content {
 
 | 函数 | 说明 |
 |------|------|
-| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.tar`，不区分大小写，未知按 TXT） |
+| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.xml`/`.tar`，不区分大小写，未知按 TXT） |
 | `read(path) -> Content` | 自动分派，返回统一结果 |
 
 `Content` 是一个带数据的枚举，按格式返回对应结构：
@@ -31,11 +32,12 @@ match content {
 | `Table` | CSV | `Array[Array[String]]`（行 → 字段） |
 | `JsonValue` | JSON | `Json`（动态值） |
 | `JsonRows` | JSONL | `Array[Json]`（每行一个对象） |
+| `XmlDoc` | XML | `XmlElement`（根元素树） |
 | `TarFiles` | TAR | `Array[String]`（包内文件名） |
 
 ## 各格式细粒度 API
 
-```moonbit
+```moonbit nocheck
 // TXT
 read_txt(path)            // 整个文件 → String
 read_txt_by_line(path)    // → Array[String]
@@ -52,6 +54,10 @@ read_json_dynamic(path)   // → Json
 read_json_by_block(path, n)
 read_jsonl_by_line(path)  // → Array[Json]
 
+// XML
+read_xml(path)            // → XmlElement（根元素树）
+parse_xml(text)           // 解析字符串 → XmlElement
+
 // TAR
 read_tar_entries(path)           // 一次读盘，返回所有条目（TarEntry）
 list_tar_filenames(path)         // 列出包内文件名
@@ -61,7 +67,7 @@ read_tar_text(path, inner)       // 读包内文件并 UTF-8 解码
 
 `read_tar_entries` 返回 `TarEntry` 数组（`name` 字段 + `content` 字节字段，另有 `text()` 方法解码为字符串），适合一次读取包内多个文件、避免反复读盘：
 
-```moonbit
+```moonbit nocheck
 for e in @moonreader.read_tar_entries("data.tar") {
   println("\{e.name}: \{e.text()}")
 }
@@ -71,7 +77,7 @@ for e in @moonreader.read_tar_entries("data.tar") {
 
 所有函数失败时抛出统一错误 `ReaderError`：
 
-```moonbit
+```moonbit nocheck
 try {
   let j = @moonreader.read_json_dynamic("data.json")
 } catch {
