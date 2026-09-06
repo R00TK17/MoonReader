@@ -27,4 +27,5 @@ description = "MoonReader — 纯 MoonBit 实现的文件内容读取库（TXT /
 
 import {
   "hustcer/fzip@0.8.6",
+  "moonbitlang/x@0.5.1",
 }

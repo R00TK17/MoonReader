@@ -171,6 +171,17 @@ moon run cmd/main -- convert data/gbk.txt utf-8 gbk        # 显式源编码
 moon run cmd/main -- convert data/gbk.txt gbk utf-8 新.txt # 另存为新文件
 ```
 
+### Wasm-GC CLI 模式（浏览器 / IDE 预览）
+
+同一套 CLI 可编译到 `wasm-gc` 目标运行：文件读写委托给 `moonbitlang/x/fs`（底层走 moonrun 的 `__moonbit_fs_unstable` 宿主），路径以字符串交给宿主，中文文件名天然支持，编码自动检测（GBK / Big5 等）同样生效。
+
+```bash
+moon run --target wasm-gc cmd/main -- testdata/sample.csv
+moon run --target wasm-gc cmd/main -- testdata/中文.txt
+moon run --target wasm-gc cmd/main -- testdata/encoding_gbk.txt
+moon run --target wasm-gc cmd/main -- convert testdata/encoding_gbk.txt utf-8 gbk 新.txt
+```
+
 ## 中文文件名
 
 库内部用 `_wfopen` + UTF-8 路径转换打开文件，外层路径和 zip/tar 包内文件名均可为中文。

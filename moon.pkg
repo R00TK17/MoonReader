@@ -6,8 +6,13 @@ import {
   "moonbitlang/core/encoding/utf16",
   "moonbitlang/core/json",
   "moonbitlang/core/ref",
+  "moonbitlang/x/fs",
 }
 
 options(
   "native-stub": [ "fs_utf8.c" ],
+  targets: {
+    "fs_utf8_native.mbt": [ "native", "llvm" ],
+    "fs_utf8_wasm.mbt": [ "wasm-gc" ],
+  },
 )
