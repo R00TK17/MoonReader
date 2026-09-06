@@ -23,6 +23,12 @@ fn main {
       let j = @moonreader.read_json_dynamic(path)
       println("JSON 解析成功:")
       println(j.stringify(indent=2))
+    } else if path.has_suffix(".tar".view()) {
+      let names = @moonreader.list_tar_filenames(path)
+      println("TAR 文件数: " + names.length().to_string())
+      for name in names {
+        println("  " + name)
+      }
     } else {
       // 未知扩展名，默认按 TXT 按行读取
       let lines = @moonreader.read_txt_by_line(path)
@@ -45,6 +51,7 @@ fn print_usage() -> Unit {
   println("    .csv   → 按行读取 CSV")
   println("    .json  → 解析 JSON")
   println("    .jsonl → 按行解析 JSONL")
+  println("    .tar   → 列出压缩包内文件名")
 }
 
 /// 把字符串数组用分隔符拼成一个字符串
