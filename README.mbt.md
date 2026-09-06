@@ -1,6 +1,6 @@
 # MoonReader
 
-纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR** 八种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
+纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR / DOCX / XLSX / PPTX** 十一种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
 
 ## 快速开始
 
@@ -16,6 +16,9 @@ match content {
   MarkdownBlocks(blocks) => ...
   ZipFiles(names) => ...
   TarFiles(names) => ...
+  DocxText(text) => ...
+  ExcelSheets(sheets) => ...
+  PptxSlides(slides) => ...
 }
 ```
 
@@ -23,7 +26,7 @@ match content {
 
 | 函数 | 说明 |
 |------|------|
-| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.xml`/`.md`/`.zip`/`.tar`，不区分大小写，未知按 TXT） |
+| `detect_format(path) -> FileFormat` | 按扩展名识别格式（`.txt`/`.csv`/`.json`/`.jsonl`/`.xml`/`.md`/`.zip`/`.tar`/`.docx`/`.xlsx`/`.pptx`，不区分大小写，未知按 TXT） |
 | `read(path) -> Content` | 自动分派，返回统一结果 |
 
 `Content` 是一个带数据的枚举，按格式返回对应结构：
@@ -38,6 +41,9 @@ match content {
 | `MarkdownBlocks` | Markdown | `Array[MarkdownBlock]`（块结构） |
 | `ZipFiles` | ZIP | `Array[String]`（包内文件名） |
 | `TarFiles` | TAR | `Array[String]`（包内文件名） |
+| `DocxText` | DOCX | `String`（文档全部文本） |
+| `ExcelSheets` | XLSX | `Array[ExcelSheet]`（全部工作表） |
+| `PptxSlides` | PPTX | `Array[String]`（每页文本） |
 
 ## 各格式细粒度 API
 
@@ -77,6 +83,15 @@ read_tar_entries(path)           // 一次读盘，返回所有条目（TarEntry
 list_tar_filenames(path)         // 列出包内文件名
 read_tar_file(path, inner)       // 读包内文件原始字节
 read_tar_text(path, inner)       // 读包内文件并 UTF-8 解码
+
+// Office（OOXML，内部解压基于 hustcer/fzip + XML 解析）
+read_docx_text(path)             // Word 全部文本 → String
+read_docx_paragraphs(path)       // Word 各段文本 → Array[String]
+read_excel_sheets(path)          // Excel 全部工作表 → Array[ExcelSheet]（name + rows）
+read_excel_as_rows(path)         // Excel 第一个工作表 → Array[Array[String]]（行 → 单元格）
+read_excel_as_string(path)       // Excel 第一个工作表 → String（制表符/换行分隔）
+read_pptx_text(path)             // PPT 全部文本 → String
+read_pptx_text_by_slide(path)    // PPT 每页文本 → Array[String]
 ```
 
 `read_tar_entries` 返回 `TarEntry` 数组（`name` 字段 + `content` 字节字段，另有 `text()` 方法解码为字符串），适合一次读取包内多个文件、避免反复读盘：
@@ -108,6 +123,9 @@ moon run cmd/main -- data/sample.zip            # 列出并 dump 包内文件
 moon run cmd/main -- data/sample.zip sample.txt # 读取包内指定文件
 moon run cmd/main -- data/sample.tar            # 列出并 dump 包内文件
 moon run cmd/main -- data/sample.tar alpha.txt  # 读取包内指定文件
+moon run cmd/main -- data/sample.docx           # 读取 Word 文档文本
+moon run cmd/main -- data/sample.xlsx           # 读取 Excel 表格
+moon run cmd/main -- data/sample.pptx           # 读取 PPT 每页文本
 ```
 
 ## 中文文件名

@@ -21,6 +21,12 @@ pub enum Content {
   ZipFiles(Array[String])
   /// TAR：包内文件名列表
   TarFiles(Array[String])
+  /// DOCX：文档全部文本
+  DocxText(String)
+  /// XLSX：全部工作表（含多 sheet）
+  ExcelSheets(Array[ExcelSheet])
+  /// PPTX：每页文本
+  PptxSlides(Array[String])
 }
 
 ///|
@@ -36,5 +42,8 @@ pub fn read(path : String) -> Content raise ReaderError {
     FileFormat::Markdown => Content::MarkdownBlocks(read_markdown(path))
     FileFormat::Zip => Content::ZipFiles(list_zip_filenames(path))
     FileFormat::Tar => Content::TarFiles(list_tar_filenames(path))
+    FileFormat::Docx => Content::DocxText(read_docx_text(path))
+    FileFormat::Xlsx => Content::ExcelSheets(read_excel_sheets(path))
+    FileFormat::Pptx => Content::PptxSlides(read_pptx_text_by_slide(path))
   }
 }

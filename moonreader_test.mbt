@@ -36,6 +36,18 @@ test "detect_format 按扩展名识别格式" {
     @moonreader.detect_format("data/a.txt"),
     @moonreader.FileFormat::Txt,
   )
+  assert_eq(
+    @moonreader.detect_format("data/a.docx"),
+    @moonreader.FileFormat::Docx,
+  )
+  assert_eq(
+    @moonreader.detect_format("data/a.xlsx"),
+    @moonreader.FileFormat::Xlsx,
+  )
+  assert_eq(
+    @moonreader.detect_format("data/a.pptx"),
+    @moonreader.FileFormat::Pptx,
+  )
 }
 
 ///|
@@ -109,4 +121,58 @@ test "read_zip 列出并读取包内文件" {
   assert_eq(names[3], "sample.json")
   let text = @moonreader.read_zip_text("testdata/sample.zip", "sample.txt")
   assert_eq(text, "hello world\nmoonbit file reader\n第三行内容\n")
+}
+
+///|
+test "read_docx_text 读取 Word 文档段落" {
+  let paras = @moonreader.read_docx_paragraphs("testdata/sample.docx")
+  assert_eq(paras.length(), 3)
+  assert_eq(paras[0], "何庄")
+  assert_eq(paras[1], "秋雨")
+  assert_eq(paras[2], "21wq")
+  assert_eq(
+    @moonreader.read_docx_text("testdata/sample.docx"),
+    "何庄\n秋雨\n21wq",
+  )
+}
+
+///|
+test "read_excel_as_rows 读取 Excel 表格" {
+  let rows = @moonreader.read_excel_as_rows("testdata/sample.xlsx")
+  assert_eq(rows.length(), 3)
+  assert_eq(rows[0].length(), 2)
+  assert_eq(rows[0][0], "何庄")
+  assert_eq(rows[0][1], "hz")
+  assert_eq(rows[1][0], "长沙理工大学")
+  assert_eq(rows[1][1], "csust")
+  assert_eq(rows[2][0], "计通学院")
+  assert_eq(rows[2][1], "it_pioneer")
+}
+
+///|
+test "read_excel_sheets 读取多 sheet" {
+  let sheets = @moonreader.read_excel_sheets("testdata/sample.xlsx")
+  assert_eq(sheets.length(), 2)
+  assert_eq(sheets[0].name, "Sheet1")
+  assert_eq(sheets[0].rows.length(), 3)
+  assert_eq(sheets[0].rows[0][0], "何庄")
+  assert_eq(sheets[1].name, "Sheet2")
+  assert_eq(sheets[1].rows.length(), 2)
+  assert_eq(sheets[1].rows[0][0], "科比")
+  assert_eq(sheets[1].rows[0][1], "213")
+  assert_eq(sheets[1].rows[1][0], "秋雨")
+  assert_eq(sheets[1].rows[1][1], "ad")
+}
+
+///|
+test "read_pptx_text 读取 PPT 每页文本" {
+  let slides = @moonreader.read_pptx_text_by_slide("testdata/sample.pptx")
+  assert_eq(slides.length(), 3)
+  assert_eq(slides[0], "何庄")
+  assert_eq(slides[1], "秋雨")
+  assert_eq(slides[2], "何庄1213asdf")
+  assert_eq(
+    @moonreader.read_pptx_text("testdata/sample.pptx"),
+    "何庄\n秋雨\n何庄1213asdf",
+  )
 }

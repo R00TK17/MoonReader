@@ -46,6 +46,28 @@ fn main {
               println(b.to_string())
             }
           }
+          DocxText(text) => {
+            println("DOCX 文本:")
+            println(text)
+          }
+          ExcelSheets(sheets) => {
+            println("XLSX 工作表数: " + sheets.length().to_string())
+            for s in sheets {
+              println("=== " + s.name + " ===")
+              for row in s.rows {
+                println(row.join(" | ".view()))
+              }
+            }
+          }
+          PptxSlides(slides) => {
+            println("PPTX 页数: " + slides.length().to_string())
+            let mut i = 1
+            for s in slides {
+              println("--- 第 " + i.to_string() + " 页 ---")
+              println(s)
+              i = i + 1
+            }
+          }
           ZipFiles(names) =>
             // 正常流程已在上面单独处理 zip，这里仅兜底
             println("ZIP 文件数: " + names.length().to_string())
@@ -121,4 +143,7 @@ fn print_usage() -> Unit {
   println("    .zip <包内文件名> → 读取包内指定文件内容")
   println("    .tar   → 列出压缩包内文件名")
   println("    .tar <包内文件名> → 读取包内指定文件内容")
+  println("    .docx  → 读取 Word 文档文本")
+  println("    .xlsx  → 读取 Excel 表格（行列）")
+  println("    .pptx  → 读取 PPT 每页文本")
 }

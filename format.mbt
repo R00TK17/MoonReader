@@ -13,6 +13,9 @@ pub(all) enum FileFormat {
   Markdown
   Zip
   Tar
+  Docx
+  Xlsx
+  Pptx
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -34,6 +37,12 @@ pub fn detect_format(path : String) -> FileFormat {
     FileFormat::Zip
   } else if p.has_suffix(".tar".view()) {
     FileFormat::Tar
+  } else if p.has_suffix(".docx".view()) {
+    FileFormat::Docx
+  } else if p.has_suffix(".xlsx".view()) {
+    FileFormat::Xlsx
+  } else if p.has_suffix(".pptx".view()) {
+    FileFormat::Pptx
   } else {
     FileFormat::Txt
   }
