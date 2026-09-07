@@ -2,8 +2,9 @@
 
 A pure-MoonBit file content reading library. It reads **12 formats** — TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR / DOCX / XLSX / PPTX / PDF — with full **Chinese-filename support** (UTF-8 path aware on Windows) and built-in **encoding auto-detection** (UTF-8 / UTF-16 / UTF-32 / GBK / Big5 / Latin-1).
 
+
 ```text
-Package:   R00TK17/moonreader   (version 0.1.0)
+Package:   R00TK17/moonreader
 Targets:   native · llvm · wasm-gc
 License:   Apache-2.0
 ```
@@ -21,6 +22,7 @@ MoonReader is both a library and a runnable project. The `cmd/main` package is a
 ### Build
 
 ```bash
+moon update                    # fetch dependencies (hustcer/fzip, moonbitlang/x)
 moon build                     # native target
 moon build --target wasm-gc    # browser / IDE preview target
 ```
@@ -124,7 +126,7 @@ Everything else — TXT / CSV / JSON / JSONL / XML / Markdown / TAR, encoding de
 
 ## Installation
 
-Add the package to your project:
+The package is published on [mooncakes.io](https://mooncakes.io/docs/R00TK17/moonreader). Add it to your project:
 
 ```bash
 moon add R00TK17/moonreader

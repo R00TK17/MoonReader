@@ -2,6 +2,8 @@
 
 纯 MoonBit 实现的文件内容读取库，支持 **TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR / DOCX / XLSX / PPTX / PDF** 十二种格式，全程中文文件名友好（Windows 下 UTF-8 路径感知）。
 
+> **定位**：面向信创 / 国产化场景，纯 MoonBit 实现多类型文件内容读取。
+
 ## 快速开始
 
 ```moonbit nocheck
@@ -161,20 +163,20 @@ try {
 ## CLI 演示
 
 ```bash
-moon run cmd/main -- data/sample.csv
-moon run cmd/main -- data/sample.zip            # 列出并 dump 包内文件
-moon run cmd/main -- data/sample.zip sample.txt # 读取包内指定文件
-moon run cmd/main -- data/sample.tar            # 列出并 dump 包内文件
-moon run cmd/main -- data/sample.tar alpha.txt  # 读取包内指定文件
-moon run cmd/main -- data/sample.docx           # 读取 Word 文档文本
-moon run cmd/main -- data/sample.xlsx           # 读取 Excel 表格
-moon run cmd/main -- data/sample.pptx           # 读取 PPT 每页文本
-moon run cmd/main -- data/sample.pdf            # 读取 PDF 每页文本
+moon run cmd/main -- testdata/sample.csv
+moon run cmd/main -- testdata/sample.zip            # 列出并 dump 包内文件
+moon run cmd/main -- testdata/sample.zip sample.txt # 读取包内指定文件
+moon run cmd/main -- testdata/sample.tar            # 列出并 dump 包内文件
+moon run cmd/main -- testdata/sample.tar alpha.txt  # 读取包内指定文件
+moon run cmd/main -- testdata/sample.docx           # 读取 Word 文档文本
+moon run cmd/main -- testdata/sample.xlsx           # 读取 Excel 表格
+moon run cmd/main -- testdata/sample.pptx           # 读取 PPT 每页文本
+moon run cmd/main -- testdata/sample.pdf            # 读取 PDF 每页文本
 
 # 编码转换：convert <文件> <目标编码> [源编码] [输出路径]
-moon run cmd/main -- convert data/gbk.txt utf-8            # 自动检测源编码，覆盖写回
-moon run cmd/main -- convert data/gbk.txt utf-8 gbk        # 显式源编码
-moon run cmd/main -- convert data/gbk.txt gbk utf-8 新.txt # 另存为新文件
+moon run cmd/main -- convert testdata/encoding_gbk.txt utf-8            # 自动检测源编码，覆盖写回
+moon run cmd/main -- convert testdata/encoding_gbk.txt utf-8 gbk        # 显式源编码
+moon run cmd/main -- convert testdata/encoding_gbk.txt utf-8 gbk 新.txt # 另存为新文件
 ```
 
 ### Wasm-GC CLI 模式（浏览器 / IDE 预览）

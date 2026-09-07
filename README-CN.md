@@ -2,8 +2,9 @@
 
 纯 MoonBit 实现的文件内容读取库，支持 **12 种格式** —— TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR / DOCX / XLSX / PPTX / PDF，全程 **中文文件名友好**（Windows 下 UTF-8 路径感知），并内置 **编码自动检测**（UTF-8 / UTF-16 / UTF-32 / GBK / Big5 / Latin-1）。
 
+
 ```text
-包名：  R00TK17/moonreader   (version 0.1.0)
+包名：  R00TK17/moonreader
 目标：  native · llvm · wasm-gc
 协议：  Apache-2.0
 ```
@@ -21,6 +22,7 @@ MoonReader 既是一个库，也是一个可直接运行的项目。`cmd/main` �
 ### 构建
 
 ```bash
+moon update                    # 首次拉取依赖（hustcer/fzip、moonbitlang/x）
 moon build                     # native 目标
 moon build --target wasm-gc    # 浏览器 / IDE 预览目标
 ```
@@ -124,7 +126,7 @@ README.mbt.md             MoonBit 包页 README（精简）
 
 ## 安装
 
-把包加入你的项目：
+包已发布到 [mooncakes.io](https://mooncakes.io/docs/R00TK17/moonreader)，直接加入你的项目：
 
 ```bash
 moon add R00TK17/moonreader

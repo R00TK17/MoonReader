@@ -1,0 +1,13 @@
+# 统一行尾符为 LF。
+# Windows 上 git 默认 core.autocrlf=true 会在 checkout 时把 LF 转成 CRLF，
+# 导致 testdata/encoding_gbk.txt 被 read_txt 读成 "…\r\n…"，字节级断言在 Windows CI 失败。
+# 用 eol=lf 强制所有平台都以 LF 检出。
+* text=auto eol=lf
+
+# 二进制夹具：禁止 git 做任何文本/换行转换
+*.tar  -text
+*.zip  -text
+*.docx -text
+*.xlsx -text
+*.pptx -text
+*.pdf  -text
