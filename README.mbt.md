@@ -14,8 +14,8 @@ match content {
   JsonRows(js) => ...
   XmlDoc(root) => ...
   MarkdownBlocks(blocks) => ...
-  ZipFiles(names) => ...
-  TarFiles(names) => ...
+  ZipFiles(entries) => ...
+  TarFiles(entries) => ...
   DocxText(text) => ...
   ExcelSheets(sheets) => ...
   PptxSlides(slides) => ...
@@ -40,8 +40,8 @@ match content {
 | `JsonRows` | JSONL | `Array[Json]`（每行一个对象） |
 | `XmlDoc` | XML | `XmlElement`（根元素树） |
 | `MarkdownBlocks` | Markdown | `Array[MarkdownBlock]`（块结构） |
-| `ZipFiles` | ZIP | `Array[String]`（包内文件名） |
-| `TarFiles` | TAR | `Array[String]`（包内文件名） |
+| `ZipFiles` | ZIP | `Array[ZipEntry]`（包内条目：文件名 + 内容字节） |
+| `TarFiles` | TAR | `Array[TarEntry]`（包内条目：文件名 + 内容字节） |
 | `DocxText` | DOCX | `String`（文档全部文本） |
 | `ExcelSheets` | XLSX | `Array[ExcelSheet]`（全部工作表） |
 | `PptxSlides` | PPTX | `Array[String]`（每页文本） |
@@ -55,6 +55,10 @@ read_txt(path)            // 整个文件 → String
 read_txt_by_line(path)    // → Array[String]
 read_txt_by_byte(path)    // → Bytes（原始字节）
 read_txt_by_block(path, n) // 每 n 个字符一块 → Array[String]
+
+// 通用文件字节读写（任意格式，中文文件名友好）
+read_file_to_bytes(path)        // 读文件原始字节 → Bytes
+write_file_to_bytes(path, data) // 写字节到文件（覆盖写）
 
 // CSV
 read_csv_by_line(path)    // → Array[Array[String]]
@@ -90,8 +94,10 @@ read_tar_text(path, inner)       // 读包内文件并 UTF-8 解码
 read_docx_text(path)             // Word 全部文本 → String
 read_docx_paragraphs(path)       // Word 各段文本 → Array[String]
 read_excel_sheets(path)          // Excel 全部工作表 → Array[ExcelSheet]（name + rows）
-read_excel_rows(path)            // Excel 第一个工作表 → Array[Array[String]]（行 → 单元格）
-read_excel_text(path)            // Excel 第一个工作表 → String（制表符/换行分隔）
+read_excel_sheet_rows(path, i)   // Excel 第 i 个工作表 → Array[Array[String]]（行 → 单元格）
+read_excel_sheet_text(path, i)   // Excel 第 i 个工作表 → String（制表符/换行分隔）
+read_excel_first_sheet_rows(path) // Excel 第一个工作表 → Array[Array[String]]
+read_excel_first_sheet_text(path) // Excel 第一个工作表 → String
 read_pptx_text(path)             // PPT 全部文本 → String
 read_pptx_text_by_slide(path)    // PPT 每页文本 → Array[String]
 read_pdf_text(path)              // PDF 全部文本 → String
@@ -134,7 +140,7 @@ read_csv_by_line("data.csv", encoding=Some(Encoding::Gbk))
 // 任意编码互转：GBK 老数据 → UTF-8 字节 → 写回新文件（支持中文文件名）
 let gbk = @moonreader.read_txt_by_byte("data/老数据.csv")
 let utf8 = @moonreader.convert(gbk, Encoding::Gbk, Encoding::Utf8)
-@moonreader.write_file_to_bytes_utf8("data/新数据.csv", utf8)
+@moonreader.write_file_to_bytes("data/新数据.csv", utf8)
 ```
 
 `Encoding` 枚举：`Utf8 / Utf16Le / Utf16Be / Utf32Le / Utf32Be / Gbk / Big5 / Latin1`。编码时不可映射字符（如 emoji、生僻字转 GBK）替换为 `?`（0x3F）。

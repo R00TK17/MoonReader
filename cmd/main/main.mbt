@@ -85,12 +85,12 @@ fn main {
               i = i + 1
             }
           }
-          ZipFiles(names) =>
+          ZipFiles(entries) =>
             // 正常流程已在上面单独处理 zip，这里仅兜底
-            println("ZIP 文件数: " + names.length().to_string())
-          TarFiles(names) =>
+            println("ZIP 文件数: " + entries.length().to_string())
+          TarFiles(entries) =>
             // 正常流程已在上面单独处理 tar，这里仅兜底
-            println("TAR 文件数: " + names.length().to_string())
+            println("TAR 文件数: " + entries.length().to_string())
         }
     }
   } catch {
@@ -202,7 +202,7 @@ fn print_convert(args : Array[String]) -> Unit raise @moonreader.ReaderError {
       return
     }
   }
-  let bytes = @moonreader.read_file_to_bytes_utf8(path)
+  let bytes = @moonreader.read_file_to_bytes(path)
   // 源编码：显式指定则用之，否则自动检测
   let (from, src_desc) = if args.length() >= 5 {
     match @moonreader.parse_encoding(args[4]) {
@@ -217,7 +217,7 @@ fn print_convert(args : Array[String]) -> Unit raise @moonreader.ReaderError {
   }
   let out = @moonreader.convert(bytes, from, to)
   let out_path = if args.length() >= 6 { args[5] } else { path }
-  @moonreader.write_file_to_bytes_utf8(out_path, out)
+  @moonreader.write_file_to_bytes(out_path, out)
   println("已转换: " + path + " (" + src_desc + " → " + args[3] + ")")
   println("输出: " + out_path + " (" + out.length().to_string() + " 字节)")
 }

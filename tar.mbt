@@ -32,7 +32,7 @@ fn tar_octal_field(arr : Array[Byte], start : Int, len : Int) -> Int {
 pub(all) struct TarEntry {
   name : String
   content : Bytes
-}
+} derive(Eq, @debug.Debug)
 
 ///|
 /// 把条目内容自动检测编码并解码为字符串（非法字节用 U+FFFD 替换）。

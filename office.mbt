@@ -30,7 +30,7 @@ pub fn read_docx_paragraphs(path : String) -> Array[String] raise ReaderError {
 pub(all) struct ExcelSheet {
   name : String
   rows : Array[Array[String]]
-}
+} derive(Eq, @debug.Debug)
 
 ///|
 /// 读取 xlsx 全部工作表（含多 sheet），共享字符串已解析为文本
@@ -48,20 +48,43 @@ pub fn read_excel_sheets(path : String) -> Array[ExcelSheet] raise ReaderError {
 }
 
 ///|
-/// 读取 xlsx 第一个工作表为二维表（行 → 单元格），共享字符串已解析为文本
-pub fn read_excel_rows(path : String) -> Array[Array[String]] raise ReaderError {
+/// 读取 xlsx 指定下标工作表为二维表（行 → 单元格），共享字符串已解析为文本。
+/// 下标越界返回空表。
+pub fn read_excel_sheet_rows(
+  path : String,
+  sheet_index : Int,
+) -> Array[Array[String]] raise ReaderError {
   let sheets = read_excel_sheets(path)
-  if sheets.length() > 0 {
-    return sheets[0].rows
+  if sheet_index >= 0 && sheet_index < sheets.length() {
+    return sheets[sheet_index].rows
   }
   []
 }
 
 ///|
+/// 读取 xlsx 第一个工作表为二维表（行 → 单元格）。
+/// 多 sheet 时仅取第一张；需要其它 sheet 请用 read_excel_sheet_rows。
+pub fn read_excel_first_sheet_rows(
+  path : String,
+) -> Array[Array[String]] raise ReaderError {
+  read_excel_sheet_rows(path, 0)
+}
+
+///|
+/// 读取 xlsx 指定下标工作表为字符串（单元格用制表符分隔，行用换行分隔）
+pub fn read_excel_sheet_text(
+  path : String,
+  sheet_index : Int,
+) -> String raise ReaderError {
+  read_excel_sheet_rows(path, sheet_index)
+  .map(fn(r) { r.join("\t") })
+  .join("\n")
+}
+
+///|
 /// 读取 xlsx 第一个工作表为字符串（单元格用制表符分隔，行用换行分隔）
-pub fn read_excel_text(path : String) -> String raise ReaderError {
-  let rows = read_excel_rows(path)
-  rows.map(fn(r) { r.join("\t") }).join("\n")
+pub fn read_excel_first_sheet_text(path : String) -> String raise ReaderError {
+  read_excel_sheet_text(path, 0)
 }
 
 ///|
@@ -110,24 +133,9 @@ fn has_entry(entries : Array[ZipEntry], name : String) -> Bool {
 }
 
 ///|
-/// 收集所有名称为 name 的后代元素（含自身）
+/// 收集所有名称为 name 的后代元素（含自身），委托给 XmlElement::find_all
 fn collect_elems(root : XmlElement, name : String) -> Array[XmlElement] {
-  let out : Array[XmlElement] = []
-  collect_walk(root, name, out)
-  out
-}
-
-///|
-fn collect_walk(e : XmlElement, name : String, out : Array[XmlElement]) -> Unit {
-  if e.name == name {
-    out.push(e)
-  }
-  for c in e.children {
-    match c {
-      Element(child) => collect_walk(child, name, out)
-      Text(_) => ()
-    }
-  }
+  root.find_all(name)
 }
 
 ///|

@@ -9,23 +9,19 @@
 
 ///|
 /// 以路径读取文件为字节序列（wasm-gc 委托 @fs，支持中文文件名）
-pub fn read_file_to_bytes_utf8(path : String) -> Bytes raise ReaderError {
-  try {
-    @fs.read_file_to_bytes(path)
-  } catch {
+fn read_file_to_bytes_utf8(path : String) -> Bytes raise ReaderError {
+  @fs.read_file_to_bytes(path) catch {
     _ => raise ReaderError::Io("读取文件失败: " + path)
   }
 }
 
 ///|
 /// 以路径把字节写入文件（覆盖写，wasm-gc 委托 @fs）
-pub fn write_file_to_bytes_utf8(
+fn write_file_to_bytes_utf8(
   path : String,
   data : Bytes,
 ) -> Unit raise ReaderError {
-  try {
-    @fs.write_bytes_to_file(path, data)
-  } catch {
+  @fs.write_bytes_to_file(path, data) catch {
     _ => raise ReaderError::Io("写入文件失败: " + path)
   }
 }

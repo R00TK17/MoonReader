@@ -11,7 +11,7 @@
 pub(all) enum XmlNode {
   Text(String)
   Element(XmlElement)
-}
+} derive(Eq, @debug.Debug)
 
 ///|
 /// XML 元素：标签名 + 属性 + 子节点
@@ -19,7 +19,7 @@ pub(all) struct XmlElement {
   name : String
   attrs : Array[(String, String)]
   children : Array[XmlNode]
-}
+} derive(Eq, @debug.Debug)
 
 ///|
 /// 读取并解析 XML 文件，返回根元素
@@ -72,6 +72,73 @@ pub fn XmlElement::attr(self : XmlElement, key : String) -> String? {
 /// 渲染为带缩进的 XML 字符串（用于展示）
 pub fn XmlElement::to_string(self : XmlElement) -> String {
   render_element(self, 0)
+}
+
+///|
+/// 直接子元素（过滤掉文本节点）
+pub fn XmlElement::child_elements(self : XmlElement) -> Array[XmlElement] {
+  let out : Array[XmlElement] = []
+  for c in self.children {
+    match c {
+      Element(child) => out.push(child)
+      Text(_) => ()
+    }
+  }
+  out
+}
+
+///|
+/// 查找第一个名为 name 的后代元素（含自身），找不到返回 None
+pub fn XmlElement::find(self : XmlElement, name : String) -> XmlElement? {
+  find_first(self, name)
+}
+
+///|
+/// 查找所有名为 name 的后代元素（含自身）
+pub fn XmlElement::find_all(
+  self : XmlElement,
+  name : String,
+) -> Array[XmlElement] {
+  let out : Array[XmlElement] = []
+  collect_walk(self, name, out)
+  out
+}
+
+// ============================================================
+// 内部遍历辅助函数
+// ============================================================
+
+///|
+/// 收集所有名为 name 的后代元素（含自身），供 find_all 使用
+fn collect_walk(e : XmlElement, name : String, out : Array[XmlElement]) -> Unit {
+  if e.name == name {
+    out.push(e)
+  }
+  for c in e.children {
+    match c {
+      Element(child) => collect_walk(child, name, out)
+      Text(_) => ()
+    }
+  }
+}
+
+///|
+/// 查找第一个名为 name 的后代元素（含自身），供 find 使用
+fn find_first(e : XmlElement, name : String) -> XmlElement? {
+  if e.name == name {
+    return Some(e)
+  }
+  for c in e.children {
+    match c {
+      Element(child) =>
+        match find_first(child, name) {
+          Some(x) => return Some(x)
+          None => ()
+        }
+      Text(_) => ()
+    }
+  }
+  None
 }
 
 // ============================================================

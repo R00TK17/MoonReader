@@ -28,7 +28,7 @@ fn handler_to_bytes(h : Handler) -> Bytes = "%identity"
 
 ///|
 /// 以 UTF-8 路径读取文件为字节序列（支持中文文件名）
-pub fn read_file_to_bytes_utf8(path : String) -> Bytes raise ReaderError {
+fn read_file_to_bytes_utf8(path : String) -> Bytes raise ReaderError {
   // String 是 UTF-16LE 内部表示，转成 UTF-8 字节后交给 C 侧
   let path_bytes = @utf8.encode(path.to_string_view())
   let h = read_file_utf8_ffi(path_bytes)
@@ -40,7 +40,7 @@ pub fn read_file_to_bytes_utf8(path : String) -> Bytes raise ReaderError {
 
 ///|
 /// 以 UTF-8 路径把字节写入文件（覆盖写，支持中文文件名）
-pub fn write_file_to_bytes_utf8(
+fn write_file_to_bytes_utf8(
   path : String,
   data : Bytes,
 ) -> Unit raise ReaderError {

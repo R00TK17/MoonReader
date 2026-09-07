@@ -37,9 +37,25 @@ pub fn read_txt_by_line(
 }
 
 ///|
-/// 读取文本文件为字节序列（用 UTF-8 路径感知的读取，支持中文文件名）
+/// 以路径读取文件为原始字节（支持中文文件名）。
+/// 内部按目标自动选择 native C stub 或 wasm-gc 的 @fs，公开面一致。
+pub fn read_file_to_bytes(path : String) -> Bytes raise ReaderError {
+  read_file_to_bytes_utf8(path)
+}
+
+///|
+/// 以路径把字节写入文件（覆盖写，支持中文文件名）
+pub fn write_file_to_bytes(
+  path : String,
+  data : Bytes,
+) -> Unit raise ReaderError {
+  write_file_to_bytes_utf8(path, data)
+}
+
+///|
+/// 读取文本文件为字节序列（等价 read_file_to_bytes，属 TXT 系列命名）
 pub fn read_txt_by_byte(file_path : String) -> Bytes raise ReaderError {
-  read_file_to_bytes_utf8(file_path)
+  read_file_to_bytes(file_path)
 }
 
 ///|

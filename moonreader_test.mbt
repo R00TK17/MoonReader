@@ -90,6 +90,19 @@ test "parse_xml 解析中文与实体" {
 }
 
 ///|
+test "XmlElement::find_all 与 find 遍历查找" {
+  let root = @moonreader.parse_xml("<r><a>1</a><b><a>2</a></b></r>")
+  let found = root.find_all("a")
+  assert_eq(found.length(), 2)
+  assert_eq(found[0].text(), "1")
+  assert_eq(found[1].text(), "2")
+  match root.find("b") {
+    Some(e) => assert_eq(e.name, "b")
+    None => abort("应找到 b")
+  }
+}
+
+///|
 test "parse_markdown 解析块结构" {
   let blocks = @moonreader.parse_markdown(
     "# 标题\n\n- 项目一\n- 项目二\n\n```moonbit\nprintln(\"hi\")\n```",
@@ -128,6 +141,17 @@ test "read_zip 列出并读取包内文件" {
 }
 
 ///|
+test "read() 统一入口返回 zip 条目内容" {
+  match @moonreader.read("testdata/sample.zip") {
+    @moonreader.Content::ZipFiles(entries) => {
+      assert_eq(entries.length(), 4)
+      assert_eq(entries[0].name, "sample.jsonl")
+    }
+    _ => abort("应为 ZipFiles")
+  }
+}
+
+///|
 test "read_docx_text 读取 Word 文档段落" {
   let paras = @moonreader.read_docx_paragraphs("testdata/sample.docx")
   assert_eq(paras.length(), 3)
@@ -141,8 +165,8 @@ test "read_docx_text 读取 Word 文档段落" {
 }
 
 ///|
-test "read_excel_rows 读取 Excel 表格" {
-  let rows = @moonreader.read_excel_rows("testdata/sample.xlsx")
+test "read_excel_first_sheet_rows 读取第一个工作表" {
+  let rows = @moonreader.read_excel_first_sheet_rows("testdata/sample.xlsx")
   assert_eq(rows.length(), 3)
   assert_eq(rows[0].length(), 2)
   assert_eq(rows[0][0], "何庄")
@@ -151,6 +175,14 @@ test "read_excel_rows 读取 Excel 表格" {
   assert_eq(rows[1][1], "csust")
   assert_eq(rows[2][0], "计通学院")
   assert_eq(rows[2][1], "it_pioneer")
+}
+
+///|
+test "read_excel_sheet_rows 读取指定下标工作表" {
+  let rows = @moonreader.read_excel_sheet_rows("testdata/sample.xlsx", 1)
+  assert_eq(rows.length(), 2)
+  assert_eq(rows[0][0], "科比")
+  assert_eq(rows[0][1], "213")
 }
 
 ///|

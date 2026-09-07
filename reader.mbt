@@ -17,10 +17,10 @@ pub enum Content {
   XmlDoc(XmlElement)
   /// Markdown：块结构列表
   MarkdownBlocks(Array[MarkdownBlock])
-  /// ZIP：包内文件名列表
-  ZipFiles(Array[String])
-  /// TAR：包内文件名列表
-  TarFiles(Array[String])
+  /// ZIP：包内条目（文件名 + 内容字节）
+  ZipFiles(Array[ZipEntry])
+  /// TAR：包内条目（文件名 + 内容字节）
+  TarFiles(Array[TarEntry])
   /// DOCX：文档全部文本
   DocxText(String)
   /// XLSX：全部工作表（含多 sheet）
@@ -29,11 +29,10 @@ pub enum Content {
   PptxSlides(Array[String])
   /// PDF：每页文本
   PdfPages(Array[String])
-}
+} derive(Eq, @debug.Debug)
 
 ///|
 /// 一键读取：根据扩展名自动识别格式并返回对应结果。
-/// 需要读取 tar 包内文件内容时，请用 read_tar_file / read_tar_text。
 pub fn read(path : String) -> Content raise ReaderError {
   match detect_format(path) {
     FileFormat::Txt => Content::Lines(read_txt_by_line(path))
@@ -42,8 +41,8 @@ pub fn read(path : String) -> Content raise ReaderError {
     FileFormat::Jsonl => Content::JsonRows(read_jsonl_by_line(path))
     FileFormat::Xml => Content::XmlDoc(read_xml(path))
     FileFormat::Markdown => Content::MarkdownBlocks(read_markdown(path))
-    FileFormat::Zip => Content::ZipFiles(list_zip_filenames(path))
-    FileFormat::Tar => Content::TarFiles(list_tar_filenames(path))
+    FileFormat::Zip => Content::ZipFiles(read_zip_entries(path))
+    FileFormat::Tar => Content::TarFiles(read_tar_entries(path))
     FileFormat::Docx => Content::DocxText(read_docx_text(path))
     FileFormat::Xlsx => Content::ExcelSheets(read_excel_sheets(path))
     FileFormat::Pptx => Content::PptxSlides(read_pptx_text_by_slide(path))
