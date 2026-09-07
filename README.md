@@ -68,15 +68,41 @@ moon run --target wasm-gc cmd/main -- convert testdata/encoding_gbk.txt utf-8 gb
 ### Project layout
 
 ```text
-cmd/main/             CLI demo (executable)
-*.mbt                 the library — one file per format
-fs_utf8.c             native file I/O C stub (UTF-8 path aware)
-fs_utf8_native.mbt    file I/O for native / llvm
-fs_utf8_wasm.mbt      file I/O for wasm-gc (delegates to @fs)
-testdata/             fixtures: 12 formats + Chinese filenames + encodings
-moonreader_test.mbt   blackbox tests
-moon.pkg              package config (imports + per-target file selection)
-moon.mod              package metadata
+cmd/main/                 CLI demo (executable)
+    main.mbt              argument parsing + dispatch by extension
+    moon.pkg              executable package config
+
+*.mbt  the library — one file per format:
+    reader.mbt            unified entry read() + Content enum
+    format.mbt            FileFormat enum + detect_format()
+    error.mbt             ReaderError type
+    txt.mbt               TXT + raw byte I/O (read_file_to_bytes / write_file_to_bytes)
+    csv.mbt               CSV
+    json.mbt              JSON / JSONL
+    xml.mbt               XML parser + XmlElement tree traversal
+    markdown.mbt          Markdown block parser
+    zip.mbt               ZIP (via hustcer/fzip)
+    tar.mbt               TAR
+    office.mbt            DOCX / XLSX / PPTX (OOXML)
+    pdf.mbt               PDF text extraction
+    encoding.mbt          encoding detect / decode / encode / convert
+    gbk_table.mbt         GBK decode table
+    gbk_enc_table.mbt     GBK encode table
+    big5_table.mbt        Big5 decode table
+    big5_enc_table.mbt    Big5 encode table
+
+fs_utf8.c                 native file I/O C stub (_wfopen, UTF-8 path aware)
+fs_utf8_native.mbt        file I/O for native / llvm (via C stub)
+fs_utf8_wasm.mbt          file I/O for wasm-gc (delegates to @fs)
+
+testdata/                 fixtures: 12 formats + Chinese filenames + encodings
+moonreader_test.mbt       blackbox tests (public API)
+moonreader_wbtest.mbt     whitebox tests (internals)
+moon.pkg                  package config (imports + per-target file selection)
+moon.mod                  package metadata
+LICENSE                   Apache-2.0
+README.md / README-CN.md  full docs (English / Chinese)
+README.mbt.md             MoonBit package-page README (concise)
 ```
 
 ---

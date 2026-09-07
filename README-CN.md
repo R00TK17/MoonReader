@@ -68,15 +68,41 @@ moon run --target wasm-gc cmd/main -- convert testdata/encoding_gbk.txt utf-8 gb
 ### 目录结构
 
 ```text
-cmd/main/             CLI 演示（可执行）
-*.mbt                 库本体——每种格式一个文件
-fs_utf8.c             native 文件 I/O 的 C stub（UTF-8 路径感知）
-fs_utf8_native.mbt    native / llvm 的文件 I/O
-fs_utf8_wasm.mbt      wasm-gc 的文件 I/O（委托给 @fs）
-testdata/             样例：12 种格式 + 中文文件名 + 编码样例
-moonreader_test.mbt   黑盒测试
-moon.pkg              包配置（导入 + 按目标选择文件）
-moon.mod              包元数据
+cmd/main/                  CLI 演示（可执行）
+    main.mbt               参数解析 + 按扩展名分派打印
+    moon.pkg               可执行包配置
+
+*.mbt  库本体（每种格式一个文件）
+    reader.mbt             统一入口 read() + Content 枚举
+    format.mbt             FileFormat 枚举 + detect_format()
+    error.mbt              ReaderError 错误类型
+    txt.mbt                TXT 与通用字节读写（read_file_to_bytes / write_file_to_bytes）
+    csv.mbt                CSV
+    json.mbt               JSON / JSONL
+    xml.mbt                XML 解析器 + XmlElement 树遍历
+    markdown.mbt           Markdown 块级解析
+    zip.mbt                ZIP（基于 hustcer/fzip）
+    tar.mbt                TAR
+    office.mbt             DOCX / XLSX / PPTX（OOXML）
+    pdf.mbt                PDF 文本抽取
+    encoding.mbt           编码检测 / 解码 / 编码 / 转换
+    gbk_table.mbt          GBK 解码码表
+    gbk_enc_table.mbt      GBK 编码码表
+    big5_table.mbt         Big5 解码码表
+    big5_enc_table.mbt     Big5 编码码表
+
+fs_utf8.c                 native 文件 I/O 的 C stub（_wfopen，UTF-8 路径感知）
+fs_utf8_native.mbt        native / llvm 的文件 I/O（走 C stub）
+fs_utf8_wasm.mbt          wasm-gc 的文件 I/O（委托给 @fs）
+
+testdata/                 样例：12 种格式 + 中文文件名 + 编码样例
+moonreader_test.mbt       黑盒测试（对公开 API）
+moonreader_wbtest.mbt     白盒测试（对内部实现）
+moon.pkg                  包配置（导入 + 按目标选择文件）
+moon.mod                  包元数据
+LICENSE                   Apache-2.0
+README.md / README-CN.md  完整使用文档（英文 / 中文）
+README.mbt.md             MoonBit 包页 README（精简）
 ```
 
 ---
