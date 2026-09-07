@@ -44,13 +44,17 @@ pub fn read_docx_paragraphs(String) -> Array[String] raise ReaderError
 
 pub fn read_docx_text(String) -> String raise ReaderError
 
-pub fn read_excel_rows(String) -> Array[Array[String]] raise ReaderError
+pub fn read_excel_first_sheet_rows(String) -> Array[Array[String]] raise ReaderError
+
+pub fn read_excel_first_sheet_text(String) -> String raise ReaderError
+
+pub fn read_excel_sheet_rows(String, Int) -> Array[Array[String]] raise ReaderError
+
+pub fn read_excel_sheet_text(String, Int) -> String raise ReaderError
 
 pub fn read_excel_sheets(String) -> Array[ExcelSheet] raise ReaderError
 
-pub fn read_excel_text(String) -> String raise ReaderError
-
-pub fn read_file_to_bytes_utf8(String) -> Bytes raise ReaderError
+pub fn read_file_to_bytes(String) -> Bytes raise ReaderError
 
 pub fn read_json(String, encoding? : Encoding?) -> Json raise ReaderError
 
@@ -90,7 +94,7 @@ pub fn read_zip_file(String, String) -> Bytes raise ReaderError
 
 pub fn read_zip_text(String, String, encoding? : Encoding?) -> String raise ReaderError
 
-pub fn write_file_to_bytes_utf8(String, Bytes) -> Unit raise ReaderError
+pub fn write_file_to_bytes(String, Bytes) -> Unit raise ReaderError
 
 // Errors
 pub(all) suberror ReaderError {
@@ -106,13 +110,13 @@ pub enum Content {
   JsonRows(Array[Json])
   XmlDoc(XmlElement)
   MarkdownBlocks(Array[MarkdownBlock])
-  ZipFiles(Array[String])
-  TarFiles(Array[String])
+  ZipFiles(Array[ZipEntry])
+  TarFiles(Array[TarEntry])
   DocxText(String)
   ExcelSheets(Array[ExcelSheet])
   PptxSlides(Array[String])
   PdfPages(Array[String])
-}
+} derive(Eq, @debug.Debug)
 
 pub(all) enum Encoding {
   Utf8
@@ -128,7 +132,7 @@ pub(all) enum Encoding {
 pub(all) struct ExcelSheet {
   name : String
   rows : Array[Array[String]]
-}
+} derive(Eq, @debug.Debug)
 
 pub(all) enum FileFormat {
   Txt
@@ -158,27 +162,30 @@ pub fn MarkdownBlock::to_string(Self) -> String
 pub(all) struct TarEntry {
   name : String
   content : Bytes
-}
+} derive(Eq, @debug.Debug)
 pub fn TarEntry::text(Self, encoding? : Encoding?) -> String
 
 pub(all) struct XmlElement {
   name : String
   attrs : Array[(String, String)]
   children : Array[XmlNode]
-}
+} derive(Eq, @debug.Debug)
 pub fn XmlElement::attr(Self, String) -> String?
+pub fn XmlElement::child_elements(Self) -> Array[Self]
+pub fn XmlElement::find(Self, String) -> Self?
+pub fn XmlElement::find_all(Self, String) -> Array[Self]
 pub fn XmlElement::text(Self) -> String
 pub fn XmlElement::to_string(Self) -> String
 
 pub(all) enum XmlNode {
   Text(String)
   Element(XmlElement)
-}
+} derive(Eq, @debug.Debug)
 
 pub(all) struct ZipEntry {
   name : String
   content : Bytes
-}
+} derive(Eq, @debug.Debug)
 pub fn ZipEntry::text(Self, encoding? : Encoding?) -> String
 
 // Type aliases

@@ -6,8 +6,14 @@ import {
   "moonbitlang/core/encoding/utf16",
   "moonbitlang/core/json",
   "moonbitlang/core/ref",
+  // 仅在 wasm-gc 目标被 fs_utf8_wasm.mbt 引用；native/llvm 走 C stub，不引用 @fs
   "moonbitlang/x/fs",
 }
+
+// moonbitlang/x/fs 只在 wasm-gc 目标被使用（见 fs_utf8_wasm.mbt），
+// native/llvm 下该包未被引用，故关闭 unused_package 告警（E0029）。
+
+warnings = "-unused_package"
 
 options(
   "native-stub": [ "fs_utf8.c" ],
