@@ -11,11 +11,11 @@
 
 name = "R00TK17/moonreader"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.mbt.md"
 
-repository = ""
+repository = "https://github.com/R00TK17/MoonReader"
 
 license = "Apache-2.0"
 
