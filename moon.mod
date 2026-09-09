@@ -11,7 +11,7 @@
 
 name = "R00TK17/moonreader"
 
-version = "0.1.2"
+version = "0.1.3"
 
 readme = "README.mbt.md"
 
@@ -19,11 +19,25 @@ repository = "https://github.com/R00TK17/MoonReader"
 
 license = "Apache-2.0"
 
-keywords = [ ]
+keywords = [
+  "file",
+  "reader",
+  "csv",
+  "json",
+  "xml",
+  "markdown",
+  "zip",
+  "tar",
+  "docx",
+  "xlsx",
+  "pptx",
+  "pdf",
+  "encoding",
+]
 
 preferred_target = "native"
 
-description = "MoonReader — 纯 MoonBit 实现的文件内容读取库（TXT / CSV / JSON / JSONL / TAR）"
+description = "MoonReader — 纯 MoonBit 实现的文件内容读取库（TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR / DOCX / XLSX / PPTX / PDF，中文文件名友好）"
 
 import {
   "hustcer/fzip@0.8.6",

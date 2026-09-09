@@ -230,7 +230,7 @@ try {
 @moonreader.read_txt("a.txt")                  // String（编码自动检测）
 @moonreader.read_txt_by_line("a.txt")          // Array[String]
 @moonreader.read_txt_by_byte("a.txt")          // Bytes（原始字节）
-@moonreader.read_txt_by_block("a.txt", 1024)   // Array[String]，每块 1024 个字符
+@moonreader.read_txt_by_block("a.txt", 1024)   // Array[String]，每块 1024 行
 
 // 显式指定编码
 @moonreader.read_txt("a.txt", encoding=Some(@moonreader.Encoding::Gbk))

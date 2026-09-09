@@ -56,7 +56,7 @@ match content {
 read_txt(path)            // 整个文件 → String
 read_txt_by_line(path)    // → Array[String]
 read_txt_by_byte(path)    // → Bytes（原始字节）
-read_txt_by_block(path, n) // 每 n 个字符一块 → Array[String]
+read_txt_by_block(path, n) // 每 n 行一块 → Array[String]
 
 // 通用文件字节读写（任意格式，中文文件名友好）
 read_file_to_bytes(path)        // 读文件原始字节 → Bytes

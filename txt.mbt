@@ -59,21 +59,26 @@ pub fn read_txt_by_byte(file_path : String) -> Bytes raise ReaderError {
 }
 
 ///|
-/// 按块读取文本文件：每块 block_size 个字符（注意是字符数，非字节数），转成字符串。
+/// 按块读取文本文件：每块 block_size 行（与 read_csv_by_block / read_json_by_block
+/// 的块大小语义一致，按「记录数」计），块内行用换行连接。
 /// encoding 缺省自动检测，可显式指定。
 pub fn read_txt_by_block(
   file_path : String,
   block_size : Int,
   encoding? : Encoding? = None,
 ) -> Array[String] raise ReaderError {
-  let content = read_txt(file_path, encoding~)
-  let n = content.length()
+  let lines = read_txt_by_line(file_path, encoding~)
   let blocks : Array[String] = []
-  let mut i = 0
-  while i < n {
-    let end = if i + block_size < n { i + block_size } else { n }
-    blocks.push(content[i:end].to_owned())
-    i = end
+  let mut cur : Array[String] = []
+  for line in lines {
+    cur.push(line)
+    if cur.length() == block_size {
+      blocks.push(cur.join("\n".view()))
+      cur = []
+    }
+  }
+  if cur.length() > 0 {
+    blocks.push(cur.join("\n".view()))
   }
   blocks
 }

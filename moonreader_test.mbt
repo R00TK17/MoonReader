@@ -443,3 +443,75 @@ test "convert Latin-1 转 UTF-8" {
   )
   assert_eq(@moonreader.decode(utf8, @moonreader.Encoding::Utf8), "Héllo")
 }
+
+// ============================================================
+// 中文文件名 & 错误路径 & 分块语义
+// ============================================================
+
+///|
+test "read_txt 中文文件名" {
+  let lines = @moonreader.read_txt_by_line("testdata/中文.txt")
+  assert_eq(lines.length(), 6)
+  assert_eq(lines[0], "何庄")
+  assert_eq(lines[4], "和1")
+  assert_eq(lines[5], "是2")
+}
+
+///|
+test "read_csv 中文文件名" {
+  let rows = @moonreader.read_csv_by_line("testdata/中文.csv")
+  assert_eq(rows.length(), 4)
+  assert_eq(rows[0][0], "name")
+  assert_eq(rows[0][2], "city")
+  assert_eq(rows[2][0], "bob")
+  assert_eq(rows[2][2], "new york, ny") // 引号内逗号不切分
+  assert_eq(rows[3][1], "28")
+}
+
+///|
+test "read_tar 中文文件名" {
+  let names = @moonreader.list_tar_filenames("testdata/中文.tar")
+  assert_eq(names.length(), 2)
+  // 外层路径为中文；内层 a.txt / b.txt 内容为 CRLF 行尾
+  assert_eq(
+    @moonreader.read_tar_text("testdata/中文.tar", "a.txt"),
+    "何庄b\r\nbb",
+  )
+  assert_eq(
+    @moonreader.read_tar_text("testdata/中文.tar", "b.txt"),
+    "秋雨a\r\naa\r\n",
+  )
+}
+
+///|
+test "读取不存在的文件抛 Io 错误" {
+  let is_io = try {
+    let _ = @moonreader.read_txt("testdata/不存在的文件.txt")
+    false
+  } catch {
+    @moonreader.ReaderError::Io(_) => true
+    _ => false
+  }
+  assert_eq(is_io, true)
+}
+
+///|
+test "解析非法 JSON 抛 Parse 错误" {
+  let is_parse = try {
+    let _ = @moonreader.read_json("testdata/sample.txt")
+    false
+  } catch {
+    @moonreader.ReaderError::Parse(_) => true
+    _ => false
+  }
+  assert_eq(is_parse, true)
+}
+
+///|
+test "read_txt_by_block 每块 N 行" {
+  let blocks = @moonreader.read_txt_by_block("testdata/中文.txt", 2)
+  assert_eq(blocks.length(), 3)
+  assert_eq(blocks[0], "何庄\n秋雨")
+  assert_eq(blocks[1], "123\nasd")
+  assert_eq(blocks[2], "和1\n是2")
+}

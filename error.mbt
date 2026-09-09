@@ -1,10 +1,11 @@
 // ============================================================
 // MoonReader — MoonBit 文件内容读取库
 //
-// 用纯 MoonBit 实现常见文本/数据格式的读取接口：
-//   TXT / CSV / JSON / JSONL / TAR
+// 用纯 MoonBit 实现 12 种文件格式的读取接口：
+//   TXT / CSV / JSON / JSONL / XML / Markdown / ZIP / TAR / DOCX / XLSX / PPTX / PDF
 //
-// 硬格式（PDF / Excel .xls / RAR 等）依赖底层解析器，后续阶段用 FFI 补齐。
+// 文本类格式自动检测编码（UTF-8 / UTF-16 / UTF-32 / GBK / Big5 / Latin-1），
+// Windows 下中文文件名友好（_wfopen + UTF-8 路径）。
 // ============================================================
 
 ///|

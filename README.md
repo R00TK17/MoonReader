@@ -230,7 +230,7 @@ try {
 @moonreader.read_txt("a.txt")                  // String  (encoding auto-detected)
 @moonreader.read_txt_by_line("a.txt")          // Array[String]
 @moonreader.read_txt_by_byte("a.txt")          // Bytes (raw)
-@moonreader.read_txt_by_block("a.txt", 1024)   // Array[String], 1024 chars per block
+@moonreader.read_txt_by_block("a.txt", 1024)   // Array[String], 1024 lines per block
 
 // optional explicit encoding
 @moonreader.read_txt("a.txt", encoding=Some(@moonreader.Encoding::Gbk))
